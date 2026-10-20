@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F8F4EA;
+  --surface: #FFFCF5;
+  --surface-secondary: #EFE8DA;
+  --surface-hover: #F0E7D7;
+  --text-primary: #252521;
+  --text-secondary: #70695D;
+  --accent: #E9A23B;
+  --accent-hover: #D58A23;
+  --accent-strong: #B87519;
+  --border: #DED5C5;
+  --success: #28764A;
+  --error: #B73B32;
+}
+
+.dark {
+  --background: #171714;
+  --surface: #20201B;
+  --surface-secondary: #272720;
+  --surface-hover: #303027;
+  --text-primary: #F8F4EA;
+  --text-secondary: #B9B3A7;
+  --accent: #F0B44D;
+  --accent-hover: #FFC96A;
+  --accent-strong: #F4C777;
+  --border: #39372E;
+  --success: #79C997;
+  --error: #FF9389;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-background text-text-primary font-body antialiased;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  .container-content {
+    @apply mx-auto w-full max-w-content px-5 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-16 sm:py-20 lg:py-24;
+  }
+
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.12em] text-accent;
+  }
+
+  .page-title {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-semibold text-text-primary leading-tight;
+  }
+
+  .section-title {
+    @apply text-2xl sm:text-3xl font-semibold text-text-primary;
+  }
+
+  .body-text {
+    @apply text-base sm:text-lg text-text-secondary leading-relaxed;
+  }
+
+  .card {
+    @apply bg-surface border border-border rounded-card shadow-card;
+  }
+
+  .card-hover {
+    @apply transition-colors duration-200 hover:bg-surface-hover;
+  }
+
+  .card-hover:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  .link-underline {
+    @apply relative inline-block after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  .active-nav {
+    @apply text-text-primary after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-[2px] after:bg-accent after:rounded-full;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

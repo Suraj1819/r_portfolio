@@ -1,0 +1,56 @@
+export const achievements = [
+  {
+    id: 'leetcode-100',
+    title: 'LeetCode 100 Days Streak',
+    organization: 'LeetCode',
+    description: 'Maintained a 100-day consecutive problem-solving streak on LeetCode.',
+    date: null,
+    link: null,
+    image: null,
+  },
+  {
+    id: 'dsa-300',
+    title: '300+ DSA Problems',
+    organization: 'LeetCode & GeeksforGeeks',
+    description: 'Solved 300+ data structures and algorithms problems across LeetCode and GeeksforGeeks.',
+    date: null,
+    link: null,
+    image: null,
+  },
+  {
+    id: 'learnx-python',
+    title: 'learnX Python Certificate',
+    organization: 'learnX',
+    description: 'Completed Python certification through learnX.',
+    date: null,
+    link: null,
+    image: null,
+  },
+  {
+    id: 'cisco-networking',
+    title: 'Cisco Networking Essentials',
+    organization: 'Cisco',
+    description: 'Completed Cisco Networking Essentials coursework.',
+    date: null,
+    link: null,
+    image: null,
+  },
+  {
+    id: 'python-workshops',
+    title: 'Python Workshops',
+    organization: 'Various',
+    description: 'Participated in Python-focused workshops to strengthen language and application fundamentals.',
+    date: null,
+    link: null,
+    image: null,
+  },
+];
+
+export const growthAreas = [
+  'DSA consistency',
+  'Software architecture',
+  'React development',
+  'Networking',
+  'Real-time systems',
+  'Backend reliability',
+];
