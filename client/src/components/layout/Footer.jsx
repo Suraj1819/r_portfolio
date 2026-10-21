@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Github,
+  Linkedin,
   Mail,
   MapPin,
   ArrowUpRight,
@@ -14,6 +16,39 @@ import {
 
 import { profile } from "../../data/profile";
 import { cn } from "../../lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Real brand logos — same source as Navbar.jsx (simpleicons.org)    */
+/* ------------------------------------------------------------------ */
+const SOCIAL_LOGOS = {
+  github: { slug: "github", color: "181717", fallback: Github },
+  linkedin: { slug: "linkedin", color: "0A66C2", fallback: Linkedin },
+};
+
+/* Renders a real brand-coloured logo. Uses dark:invert for GitHub so the
+   black logo becomes white on dark backgrounds. LinkedIn stays brand-blue
+   on both themes. Falls back to the lucide icon if CDN fails. */
+function SocialIcon({ name, size = 16, className = "" }) {
+  const meta = SOCIAL_LOGOS[name];
+  const [broken, setBroken] = useState(false);
+  if (!meta) return null;
+  if (broken) {
+    const Fallback = meta.fallback;
+    return <Fallback size={size} className={className} strokeWidth={1.7} />;
+  }
+  const invert = name === "github" ? "dark:invert" : "";
+  return (
+    <img
+      src={`https://cdn.simpleicons.org/${meta.slug}/${meta.color}`}
+      alt=""
+      loading="lazy"
+      width={size}
+      height={size}
+      className={cn("shrink-0", invert, className)}
+      onError={() => setBroken(true)}
+    />
+  );
+}
 
 const NAV_LINKS = [
   { label: "Home", to: "/", icon: Home },
@@ -81,30 +116,44 @@ export function Footer() {
               useful digital products.
             </p>
 
+            {/* Social icons — real GitHub + LinkedIn brand logos */}
             <div className="mt-5 flex items-center gap-2">
               <a
-                href={profile.github}
+                href={profile.github || "https://github.com/Suraj1819"}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
+                title="GitHub"
                 className="group flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-400 hover:text-neutral-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:border-white/25 dark:hover:text-white"
               >
-                <Github size={16} />
+                <SocialIcon name="github" size={16} className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+              </a>
+              <a
+                href={profile.linkedin || "https://www.linkedin.com/in/suraj1819"}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                title="LinkedIn"
+                className="group flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-400 hover:text-neutral-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:border-white/25 dark:hover:text-white"
+              >
+                <SocialIcon name="linkedin" size={16} className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
               </a>
               <a
                 href={`mailto:${profile.email}`}
                 aria-label="Email"
+                title="Email"
                 className="group flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-400 hover:text-neutral-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:border-white/25 dark:hover:text-white"
               >
-                <Mail size={16} />
+                <Mail size={16} strokeWidth={1.7} />
               </a>
               <a
                 href={profile.resumePath || "/resume.pdf"}
                 download
                 aria-label="Resume"
+                title="Resume"
                 className="group flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-400 hover:text-neutral-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:border-white/25 dark:hover:text-white"
               >
-                <ExternalLink size={16} />
+                <ExternalLink size={16} strokeWidth={1.7} />
               </a>
             </div>
           </div>
@@ -176,13 +225,28 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li>
                 <a
-                  href={profile.github}
+                  href={profile.github || "https://github.com/Suraj1819"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                 >
-                  <Github className="h-4 w-4 shrink-0" />
+                  <SocialIcon name="github" size={16} className="h-4 w-4 shrink-0" />
                   GitHub
+                  <ArrowUpRight
+                    size={13}
+                    className="opacity-0 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                  />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={profile.linkedin || "https://www.linkedin.com/in/suraj1819"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-2 text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                >
+                  <SocialIcon name="linkedin" size={16} className="h-4 w-4 shrink-0" />
+                  LinkedIn
                   <ArrowUpRight
                     size={13}
                     className="opacity-0 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
@@ -194,12 +258,12 @@ export function Footer() {
                   href={`mailto:${profile.email}`}
                   className="group inline-flex items-center gap-2 text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                 >
-                  <Mail className="h-4 w-4 shrink-0" />
+                  <Mail className="h-4 w-4 shrink-0" strokeWidth={1.7} />
                   <span className="truncate">Email</span>
                 </a>
               </li>
               <li className="inline-flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-                <MapPin className="h-4 w-4 shrink-0" />
+                <MapPin className="h-4 w-4 shrink-0" strokeWidth={1.7} />
                 <span>{profile.location || "India"}</span>
               </li>
             </ul>

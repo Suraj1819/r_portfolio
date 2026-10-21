@@ -1,44 +1,42 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowDownRight,
   ArrowRight,
+  ArrowUp,
   ArrowUpRight,
+  Award,
+  BarChart3,
+  Binary,
+  BookOpen,
+  Boxes,
   Braces,
-  Calendar,
+  Briefcase,
   Check,
-  ChevronLeft,
   ChevronRight,
   Clock,
   Code2,
   Database,
   ExternalLink,
-  FileCode2,
   Github,
   Globe,
-  Image as ImageIcon,
-  Layers3,
-  LayoutGrid,
-  List,
+  Home as HomeIcon,
+  Layers,
+  Lightbulb,
+  ListChecks,
+  Mail,
   MonitorSmartphone,
   Network,
+  Plug,
   Rocket,
   Search,
   Server,
   Sparkles,
   Star,
   Target,
-  Terminal,
+  TrendingUp,
   Wrench,
   X,
-  Home as HomeIcon,
-  ChevronRight as ChevronRightIcon,
-  Cpu,
-  Cloud,
-  GitBranch,
-  ShieldCheck,
-  Briefcase,
-  Zap,
 } from "lucide-react";
 import * as SimpleIcons from "simple-icons";
 
@@ -47,28 +45,29 @@ import {
   learningRoadmap,
   proficiencyPercent,
 } from "../data/skills";
+import * as skillsData from "../data/skills";
 import { projects } from "../data/projects";
 import { cn } from "../lib/utils";
 
 /* ------------------------------------------------------------------ */
-/*  CONFIG                                                             */
+/* Configuration                                                       */
 /* ------------------------------------------------------------------ */
+
+const GITHUB_PROFILE = "https://github.com/Suraj1819";
+const MOBILE_SKILL_LIMIT = 4;
 
 const CATEGORY_CONFIG = {
   languages: {
     icon: Code2,
-    description:
-      "Languages I use for programming, scripting and problem-solving.",
+    description: "Languages for programming, scripting and problem-solving.",
   },
   frontend: {
     icon: MonitorSmartphone,
-    description:
-      "Responsive interfaces, reusable components and accessible UX.",
+    description: "Responsive interfaces, reusable components and accessible UX.",
   },
   backend: {
     icon: Server,
-    description:
-      "APIs, server-side logic and real-time application functionality.",
+    description: "APIs, server-side logic and real-time functionality.",
   },
   databases: {
     icon: Database,
@@ -76,15 +75,14 @@ const CATEGORY_CONFIG = {
   },
   realtime: {
     icon: Network,
-    description:
-      "Peer-to-peer communication, signaling and connection lifecycle.",
+    description: "Peer-to-peer communication, signaling and connection lifecycle.",
   },
   tools: {
     icon: Wrench,
-    description: "Tools used for development, debugging and deployment.",
+    description: "Tools for development, debugging and deployment.",
   },
   ui: {
-    icon: Layers3,
+    icon: Layers,
     description: "Component libraries and routing tools.",
   },
 };
@@ -95,15 +93,20 @@ const TECHNOLOGY_LOGOS = {
   python: "siPython",
   react: "siReact",
   "react.js": "siReact",
+  reactjs: "siReact",
   vite: "siVite",
   tailwind: "siTailwindcss",
   "tailwind css": "siTailwindcss",
+  tailwindcss: "siTailwindcss",
   node: "siNodedotjs",
   "node.js": "siNodedotjs",
   nodejs: "siNodedotjs",
   express: "siExpress",
   "express.js": "siExpress",
+  expressjs: "siExpress",
   mongodb: "siMongodb",
+  mongo: "siMongodb",
+  mongoose: "siMongoose",
   postgresql: "siPostgresql",
   postgres: "siPostgresql",
   supabase: "siSupabase",
@@ -125,27 +128,70 @@ const TECHNOLOGY_LOGOS = {
   docker: "siDocker",
   vercel: "siVercel",
   render: "siRender",
+  netlify: "siNetlify",
   firebase: "siFirebase",
   "next.js": "siNextdotjs",
   nextjs: "siNextdotjs",
   "socket.io": "siSocketdotio",
   socketio: "siSocketdotio",
+  webrtc: "siWebrtc",
   mysql: "siMysql",
   redis: "siRedis",
+  redux: "siRedux",
+  axios: "siAxios",
+  jwt: "siJsonwebtokens",
+  nginx: "siNginx",
   figma: "siFigma",
   linux: "siLinux",
+  cloudinary: "siCloudinary",
+  stripe: "siStripe",
 };
 
-const LEVEL_FILTERS = ["all", "Used in Projects", "Working Knowledge", "Familiar"];
+const FALLBACK_ICONS = {
+  sql: Database,
+  dbms: Database,
+  restapis: Globe,
+  restapi: Globe,
+  api: Globe,
+  apis: Globe,
+  websockets: Plug,
+  websocket: Plug,
+  stun: Network,
+  turn: Network,
+  networks: Network,
+  networking: Network,
+  dsa: Binary,
+  oop: Boxes,
+};
 
-const SORT_OPTIONS = [
-  { id: "default", label: "Default order" },
-  { id: "level", label: "Highest level" },
-  { id: "name", label: "A – Z" },
+const LEVEL_FILTERS = [
+  "all",
+  "Used in Projects",
+  "Working Knowledge",
+  "Familiar",
 ];
 
 /* ------------------------------------------------------------------ */
-/*  HELPERS                                                            */
+/* Theme                                                               */
+/* ------------------------------------------------------------------ */
+
+const card =
+  "rounded-2xl border border-neutral-200 bg-white dark:border-white/10 dark:bg-white/[0.04]";
+
+const iconBox =
+  "flex shrink-0 items-center justify-center bg-neutral-900 text-white dark:bg-white dark:text-neutral-900";
+
+const focus =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 dark:focus-visible:ring-white dark:focus-visible:ring-offset-neutral-950";
+
+const hoverCard =
+  "transition-colors duration-200 hover:border-neutral-900 dark:hover:border-white";
+
+const muted = "text-neutral-600 dark:text-neutral-400";
+const soft = "text-neutral-500 dark:text-neutral-400";
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
 function normalise(value) {
@@ -156,233 +202,237 @@ function normalise(value) {
     .replace(/\s+/g, " ");
 }
 
-function skillName(skill) {
-  if (typeof skill === "string") return skill;
-  return skill?.name ?? skill?.title ?? skill?.label ?? "";
-}
+const skillName = (skill) =>
+  typeof skill === "string"
+    ? skill
+    : skill?.name ?? skill?.title ?? skill?.label ?? "";
 
-function categoryName(category) {
-  return (
-    category?.name ??
-    category?.title ??
-    category?.label ??
-    category?.id ??
-    "Other skills"
-  );
-}
+const categoryName = (category) =>
+  category?.name ??
+  category?.title ??
+  category?.label ??
+  category?.id ??
+  "Other skills";
 
-function categoryId(category) {
-  return normalise(category?.id ?? category?.slug ?? category?.name);
-}
+const categoryId = (category) =>
+  normalise(category?.id ?? category?.slug ?? category?.name);
 
-function categoryConfig(category) {
-  const id = categoryId(category);
-  return (
-    CATEGORY_CONFIG[id] ?? {
-      icon: Layers3,
-      description: "Technologies and concepts used in my development workflow.",
-    }
-  );
-}
+const categoryConfig = (category) =>
+  CATEGORY_CONFIG[categoryId(category)] ?? {
+    icon: Layers,
+    description: "Technologies and concepts used in my workflow.",
+  };
 
 function getLogo(name) {
   const iconName = TECHNOLOGY_LOGOS[normalise(name)];
   return iconName ? SimpleIcons[iconName] ?? null : null;
 }
 
-function canonical(name) {
+const canonical = (name) => {
   const key = normalise(name);
   return TECHNOLOGY_LOGOS[key] ?? key;
-}
+};
 
 function skillPercent(skill) {
   if (!skill || typeof skill !== "object") return null;
+
   const direct = skill.proficiency ?? skill.percentage ?? skill.percent;
-  if (typeof direct === "number") return Math.max(0, Math.min(100, direct));
+
+  if (typeof direct === "number") {
+    return Math.max(0, Math.min(100, direct));
+  }
+
   if (typeof skill.level === "number") {
     return Math.max(0, Math.min(100, skill.level));
   }
+
   if (typeof skill.level === "string") {
-    return proficiencyPercent[skill.level] ?? null;
+    return proficiencyPercent?.[skill.level] ?? null;
   }
+
   return null;
 }
 
-function levelLabel(skill) {
-  if (!skill || typeof skill !== "object") return null;
-  if (typeof skill.level === "string") return skill.level;
-  return null;
-}
+const levelLabel = (skill) =>
+  skill &&
+  typeof skill === "object" &&
+  typeof skill.level === "string"
+    ? skill.level
+    : null;
 
-function techName(technology) {
-  return typeof technology === "string"
-    ? technology
-    : technology?.name ?? technology?.title ?? "";
-}
+const techName = (tech) =>
+  typeof tech === "string" ? tech : tech?.name ?? tech?.title ?? "";
 
 function projectTechs(project) {
-  const list = project?.technologies ?? project?.techStack ?? project?.tech ?? [];
+  const list =
+    project?.technologies ??
+    project?.techStack ??
+    project?.tech ??
+    [];
+
   return Array.isArray(list) ? list.map(techName).filter(Boolean) : [];
 }
 
-function projectTitle(project) {
-  return project?.title ?? project?.name ?? "Project";
-}
-
-function projectSlug(project) {
-  return project?.slug ?? null;
-}
-
-function projectImages(project) {
-  const list = [];
-  const main = project?.image ?? project?.thumbnail ?? project?.cover;
-  if (main) list.push(main);
-
-  if (Array.isArray(project?.preview)) {
-    project.preview.forEach((img) => {
-      const src = typeof img === "string" ? img : img?.src ?? img?.url;
-      if (src && !list.includes(src)) list.push(src);
-    });
-  }
-  if (Array.isArray(project?.gallery)) {
-    project.gallery.forEach((img) => {
-      const src = typeof img === "string" ? img : img?.src ?? img?.url;
-      if (src && !list.includes(src)) list.push(src);
-    });
-  }
-  if (Array.isArray(project?.images)) {
-    project.images.forEach((img) => {
-      const src = typeof img === "string" ? img : img?.src ?? img?.url;
-      if (src && !list.includes(src)) list.push(src);
-    });
-  }
-  return list;
-}
-
-function projectLinks(project) {
-  return {
-    github: project?.links?.github ?? project?.github,
-    live: project?.links?.live ?? project?.live ?? project?.demo,
-  };
-}
-
-function projectStatus(project) {
-  const status = normalise(project?.status);
-  if (!status) return null;
-  if (/(complete|done|live|deployed|launched)/.test(status)) {
-    return { label: "Completed", tone: "done" };
-  }
-  if (/(progress|ongoing|building|develop)/.test(status)) {
-    return { label: "In progress", tone: "progress" };
-  }
-  if (/(prototype|experimental|exploratory)/.test(status)) {
-    return { label: "Prototype", tone: "prototype" };
-  }
-  return { label: project.status, tone: "other" };
-}
+const projectTitle = (project) =>
+  project?.title ?? project?.name ?? "Project";
 
 function roadmapState(item) {
   const status = normalise(item?.status ?? item?.stage ?? "");
+
   if (/(complete|done|learned|finished)/.test(status)) return "done";
-  if (/(progress|learning|current|ongoing|now)/.test(status)) return "progress";
+  if (/(progress|learning|current|ongoing|now)/.test(status)) {
+    return "progress";
+  }
+
   return "planned";
 }
 
-const STATUS_STYLES = {
-  done: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-400/20",
-  progress:
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-400/20",
-  prototype:
-    "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-400/20",
-  planned:
-    "bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-white/[0.05] dark:text-neutral-300 dark:border-white/10",
-  other:
-    "bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-white/[0.05] dark:text-neutral-300 dark:border-white/10",
+const STATE_LABEL = {
+  done: "Completed",
+  progress: "In progress",
+  planned: "Up next",
 };
 
-const STATUS_ICONS = {
+const STATE_ICON = {
   done: Check,
   progress: Clock,
-  prototype: Sparkles,
   planned: Target,
-  other: Star,
+};
+
+const toList = (value) =>
+  Array.isArray(value)
+    ? value
+    : typeof value === "string" && value.trim()
+      ? [value]
+      : [];
+
+const textOf = (item) =>
+  typeof item === "string"
+    ? item
+    : item?.text ??
+      item?.title ??
+      item?.name ??
+      item?.description ??
+      "";
+
+const firstOf = (object, ...keys) => {
+  for (const key of keys) {
+    const value = object?.[key];
+
+    if (
+      value !== undefined &&
+      value !== null &&
+      value !== "" &&
+      !(Array.isArray(value) && value.length === 0)
+    ) {
+      return value;
+    }
+  }
+
+  return undefined;
 };
 
 /* ------------------------------------------------------------------ */
-/*  SHARED UI (matches Home / About / Projects)                        */
+/* Small components                                                     */
 /* ------------------------------------------------------------------ */
 
-function SectionLabel({ children }) {
-  return (
-    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">
-      {children}
-    </p>
-  );
-}
-
-function Eyebrow({ children }) {
-  return <SectionLabel>{children}</SectionLabel>;
-}
-
-function IconBox({ icon: Icon, className = "" }) {
-  return (
-    <div
-      className={cn(
-        "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-800 transition-colors dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-100",
-        className
-      )}
-    >
-      <Icon size={20} strokeWidth={1.6} />
-    </div>
-  );
-}
-
-function TechnologyLogo({ name, size = "md" }) {
+function TechLogo({ name, size = "md" }) {
   const logo = getLogo(name);
-  const box =
-    size === "sm"
-      ? "h-7 w-7 rounded-lg"
-      : size === "lg"
-        ? "h-14 w-14 rounded-2xl"
-        : "h-10 w-10 rounded-xl";
-  const icon =
-    size === "sm"
-      ? "h-[15px] w-[15px]"
-      : size === "lg"
-        ? "h-[28px] w-[28px]"
-        : "h-[21px] w-[21px]";
+  const Fallback =
+    FALLBACK_ICONS[normalise(name).replace(/\s/g, "")] ?? Code2;
+
+  const box = {
+    sm: "h-7 w-7 rounded-lg",
+    md: "h-8 w-8 rounded-lg sm:h-11 sm:w-11 sm:rounded-xl",
+    lg: "h-10 w-10 rounded-xl sm:h-14 sm:w-14 sm:rounded-2xl",
+  }[size];
+
+  const svg = {
+    sm: "h-4 w-4",
+    md: "h-4 w-4 sm:h-6 sm:w-6",
+    lg: "h-5 w-5 sm:h-8 sm:w-8",
+  }[size];
 
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center border border-neutral-200 bg-white text-neutral-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-100",
-        box
+        "flex shrink-0 items-center justify-center bg-white ring-1 ring-neutral-200 dark:ring-white/10",
+        box,
       )}
     >
       {logo ? (
         <svg
           viewBox="0 0 24 24"
-          className={icon}
+          className={svg}
           role="img"
           aria-label={`${name} logo`}
         >
-          <path d={logo.path} fill="currentColor" />
+          <path d={logo.path} fill={`#${logo.hex}`} />
         </svg>
       ) : (
-        <Code2 className={icon} strokeWidth={1.7} />
+        <Fallback
+          className={cn(svg, "text-neutral-500")}
+          strokeWidth={1.6}
+        />
       )}
     </span>
   );
 }
 
-function ProgressBar({ value, className }) {
+function Block({
+  id,
+  icon: Icon,
+  title,
+  subtitle,
+  count,
+  action,
+  children,
+}) {
   return (
-    <div
-      className={cn(
-        "h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-white/[0.07]",
-        className
-      )}
-    >
+    <section id={id} className="scroll-mt-32 sm:scroll-mt-28">
+      <header className="mb-4 flex items-start justify-between gap-2 sm:mb-6 sm:gap-3">
+        <div className="flex min-w-0 items-start gap-2.5 sm:gap-3.5">
+          <span
+            className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 sm:rounded-xl",
+              iconBox,
+            )}
+          >
+            <Icon size={16} className="sm:h-5 sm:w-5" />
+          </span>
+
+          <div className="min-w-0 pt-0.5">
+            <h2 className="text-lg font-semibold tracking-tight sm:text-2xl lg:text-3xl">
+              {title}
+            </h2>
+
+            {subtitle && (
+              <p className={cn("mt-1 hidden text-sm sm:block", soft)}>
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2 pt-1 sm:gap-3">
+          {action}
+
+          {count != null && (
+            <span className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-medium text-neutral-600 dark:bg-white/10 dark:text-neutral-300 sm:px-3 sm:text-xs">
+              {count}
+            </span>
+          )}
+        </div>
+      </header>
+
+      {children}
+    </section>
+  );
+}
+
+function Bar({ value }) {
+  return (
+    <div className="h-1 w-full overflow-hidden rounded-full bg-neutral-200/70 dark:bg-white/10 sm:h-1.5">
       <div
         className="h-full rounded-full bg-neutral-900 transition-all duration-700 dark:bg-white"
         style={{ width: `${value}%` }}
@@ -391,14 +441,16 @@ function ProgressBar({ value, className }) {
   );
 }
 
-function ProgressRing({ value, size = 72 }) {
+function Ring({ value, size = 56 }) {
   const stroke = 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
 
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
+    <div
+      className="relative hidden shrink-0 sm:block"
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2}
@@ -416,11 +468,12 @@ function ProgressRing({ value, size = 72 }) {
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="stroke-neutral-900 transition-all duration-700 dark:stroke-white"
+          strokeDashoffset={circumference - (value / 100) * circumference}
+          className="stroke-neutral-900 dark:stroke-white"
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold tabular-nums">
+
+      <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold tabular-nums">
         {Math.round(value)}%
       </span>
     </div>
@@ -432,11 +485,13 @@ function Chip({ active, onClick, children, count }) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-medium transition",
+        "inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition",
+        focus,
         active
           ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
-          : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 dark:border-white/10 dark:bg-transparent dark:text-neutral-300 dark:hover:border-white/30"
+          : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 dark:border-white/10 dark:bg-white/5 dark:text-neutral-300 dark:hover:border-white/30",
       )}
     >
       {children}
@@ -444,7 +499,7 @@ function Chip({ active, onClick, children, count }) {
         <span
           className={cn(
             "tabular-nums",
-            active ? "opacity-70" : "text-neutral-400"
+            active ? "opacity-70" : "text-neutral-400",
           )}
         >
           {count}
@@ -454,63 +509,31 @@ function Chip({ active, onClick, children, count }) {
   );
 }
 
-function Reveal({ children, className = "", delay = 0 }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return undefined;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setVisible(true);
-      return undefined;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisible(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -50px 0px" }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+function StatusBadge({ state, label }) {
+  const Icon = STATE_ICON[state] ?? Sparkles;
 
   return (
-    <div
-      ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={cn(
-        "transition-all duration-700 ease-out",
-        visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
-        className
-      )}
-    >
-      {children}
-    </div>
+    <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-medium text-neutral-700 dark:bg-white/10 dark:text-neutral-300 sm:gap-1.5 sm:px-2.5 sm:text-xs">
+      <Icon size={11} />
+      {label ?? STATE_LABEL[state]}
+    </span>
   );
 }
 
 function Modal({ open, onClose, children, label }) {
   useEffect(() => {
     if (!open) return undefined;
-    const onKey = (event) => event.key === "Escape" && onClose();
-    const prevOverflow = document.body.style.overflow;
-    const prevPadding = document.body.style.paddingRight;
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
+
+    const onKey = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
+
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPadding;
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKey);
     };
   }, [open, onClose]);
@@ -519,7 +542,7 @@ function Modal({ open, onClose, children, label }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/80 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center sm:p-6"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -527,83 +550,124 @@ function Modal({ open, onClose, children, label }) {
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-neutral-200 bg-white text-neutral-900 shadow-2xl dark:border-white/10 dark:bg-[#121214] dark:text-neutral-100 sm:rounded-3xl"
+        className="relative max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-neutral-200 bg-white text-neutral-900 shadow-2xl dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100 sm:rounded-3xl"
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur transition hover:bg-white/20"
+          className={cn(
+            "absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white transition hover:bg-neutral-100 dark:border-white/15 dark:bg-neutral-900 dark:hover:bg-white/10 sm:right-4 sm:top-4 sm:h-10 sm:w-10",
+            focus,
+          )}
         >
           <X size={18} />
         </button>
+
         {children}
       </div>
     </div>
   );
 }
 
-function ProjectImage({ src, alt, className, fallbackIcon: FallbackIcon = ImageIcon }) {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [src]);
+/* ------------------------------------------------------------------ */
+/* Hooks                                                               */
+/* ------------------------------------------------------------------ */
 
-  if (!src || failed) {
-    return (
-      <div
-        className={cn(
-          "relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 text-neutral-400 dark:from-white/[0.06] dark:to-white/[0.02] dark:text-neutral-600",
-          className
-        )}
-        aria-label={`${alt} (no preview available)`}
-      >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-        <FallbackIcon size={30} strokeWidth={1.4} />
-      </div>
-    );
-  }
+function useScrollSpy(ids) {
+  const key = ids.join(",");
+  const [active, setActive] = useState(ids[0]);
+
+  useEffect(() => {
+    if (!ids.length) return undefined;
+
+    const handler = () => {
+      const position = window.scrollY + 180;
+
+      for (let i = ids.length - 1; i >= 0; i--) {
+        const element = document.getElementById(ids[i]);
+
+        if (element && element.offsetTop <= position) {
+          setActive(ids[i]);
+          return;
+        }
+      }
+
+      setActive(ids[0]);
+    };
+
+    window.addEventListener("scroll", handler, { passive: true });
+    handler();
+
+    return () => window.removeEventListener("scroll", handler);
+  }, [key]);
+
+  return active;
+}
+
+function ReadingProgress() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const total =
+        document.documentElement.scrollHeight - window.innerHeight;
+
+      setProgress(total > 0 ? (window.scrollY / total) * 100 : 0);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      onError={() => setFailed(true)}
-      className={cn("object-cover", className)}
-    />
+    <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-0.5">
+      <div
+        className="h-full bg-neutral-900 transition-[width] duration-150 dark:bg-white"
+        style={{ width: `${progress}%` }}
+      />
+    </div>
   );
 }
 
-function StatusBadge({ status }) {
-  if (!status) return null;
-  const tone = projectStatus({ status })?.tone ?? "other";
-  const Icon = STATUS_ICONS[tone];
+function BackToTop() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 900);
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (!show) return null;
+
   return (
-    <span
+    <button
+      type="button"
+      aria-label="Back to top"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
-        STATUS_STYLES[tone]
+        "fixed bottom-4 right-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 sm:bottom-5 sm:right-5 sm:h-12 sm:w-12",
+        focus,
       )}
     >
-      <Icon size={11} />
-      {status}
-    </span>
+      <ArrowUp size={19} />
+    </button>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  SKILL CARD                                                         */
+/* Skills                                                              */
 /* ------------------------------------------------------------------ */
 
-function TechnologyItem({ skill, usedIn, onOpen, view }) {
+function SkillTile({ skill, usedIn, onOpen }) {
   const name = skillName(skill);
+
   if (!name) return null;
 
   const percent = skillPercent(skill);
@@ -612,892 +676,470 @@ function TechnologyItem({ skill, usedIn, onOpen, view }) {
   return (
     <button
       type="button"
-      onClick={() => onOpen(skill)}
+      onClick={onOpen}
+      aria-label={`View ${name} skill details`}
       className={cn(
-        "group flex min-w-0 items-center gap-3 rounded-2xl border border-neutral-200/80 bg-white p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:border-neutral-400 hover:shadow-sm dark:border-white/[0.09] dark:bg-white/[0.025] dark:hover:border-white/25",
-        view === "list" && "sm:gap-5"
+        "group flex min-h-[66px] w-full min-w-0 items-center gap-2 rounded-xl bg-neutral-50 p-2.5 text-left transition hover:bg-neutral-100 dark:bg-white/5 dark:hover:bg-white/10 sm:min-h-[132px] sm:flex-col sm:items-stretch sm:justify-between sm:gap-3 sm:p-4",
+        focus,
       )}
     >
-      <TechnologyLogo name={name} />
+      <TechLogo name={name} size="md" />
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-            {name}
+      <div className="min-w-0 flex-1 sm:flex sm:w-full sm:flex-col sm:gap-2">
+        <p className="break-words text-xs font-semibold leading-snug sm:text-sm">
+          {name}
+        </p>
+
+        {label && (
+          <p className={cn("mt-0.5 hidden line-clamp-1 text-[10px] sm:block sm:text-xs", soft)}>
+            {label}
           </p>
-          {label && (
-            <span className="shrink-0 text-[11px] text-neutral-500 dark:text-neutral-400">
-              {label}
-            </span>
-          )}
-        </div>
+        )}
 
-        {percent != null ? (
-          <ProgressBar value={percent} className="mt-2" />
-        ) : (
-          <p className="mt-1 text-xs text-neutral-400">Click for details</p>
+        {percent != null && (
+          <div className="mt-2 hidden sm:block">
+            <Bar value={percent} />
+          </div>
         )}
 
         {usedIn > 0 && (
-          <p className="mt-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
-            Used in {usedIn} project{usedIn > 1 ? "s" : ""}
+          <p className={cn("mt-1 hidden text-[11px] sm:block", soft)}>
+            {usedIn} project{usedIn > 1 ? "s" : ""}
           </p>
         )}
       </div>
 
-      <ArrowDownRight
-        size={15}
-        className="shrink-0 text-neutral-300 transition group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:text-neutral-600 dark:text-neutral-600 dark:group-hover:text-neutral-300"
+      <ArrowUpRight
+        size={14}
+        className="hidden shrink-0 text-neutral-300 transition group-hover:text-neutral-700 dark:text-neutral-600 dark:group-hover:text-white sm:block"
       />
     </button>
   );
 }
 
-function CategorySection({ category, skills, index, view, projectCount, onOpen }) {
+function CategoryCard({ category, skills, projectCount, onOpen }) {
+  const [expanded, setExpanded] = useState(false);
   const config = categoryConfig(category);
   const Icon = config.icon;
-  if (!skills.length) return null;
 
-  const percents = skills.map(skillPercent).filter((p) => p != null);
+  const percents = skills.map(skillPercent).filter((value) => value != null);
+
   const average = percents.length
-    ? Math.round(percents.reduce((a, b) => a + b, 0) / percents.length)
+    ? Math.round(
+        percents.reduce((sum, value) => sum + value, 0) / percents.length,
+      )
     : null;
 
   return (
-    <Reveal delay={index * 50}>
-      <section className="min-w-0">
-        <div className="mb-6 flex items-start gap-4">
-          <IconBox icon={Icon} />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-semibold tracking-tight text-neutral-900 dark:text-white">
-                {categoryName(category)}
-              </h3>
-              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-500 dark:bg-white/[0.07] dark:text-neutral-400">
-                {skills.length}
-              </span>
-              {average != null && (
-                <span className="rounded-full border border-neutral-200 px-2 py-0.5 text-[11px] text-neutral-500 dark:border-white/10 dark:text-neutral-400">
-                  avg {average}%
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-              {category?.description ?? config.description}
-            </p>
-          </div>
-          <span className="hidden pt-1 text-xs tabular-nums text-neutral-400 sm:block">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-        </div>
-
-        <div
+    <div className={cn(card, "p-3 sm:p-5 lg:p-6")}>
+      <div className="mb-3 flex items-center gap-2.5 sm:mb-5 sm:items-start sm:gap-3.5">
+        <span
           className={cn(
-            "grid grid-cols-1 gap-3",
-            view === "grid" && "sm:grid-cols-2"
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl",
+            iconBox,
           )}
         >
-          {skills.map((skill, i) => (
-            <TechnologyItem
-              key={`${skillName(skill)}-${i}`}
-              skill={skill}
-              view={view}
-              usedIn={projectCount(skillName(skill))}
-              onOpen={(s) => onOpen({ skill: s, category })}
-            />
-          ))}
+          <Icon size={16} className="sm:h-[18px] sm:w-[18px]" />
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <h3 className="text-sm font-semibold sm:text-base">
+              {categoryName(category)}
+            </h3>
+
+            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500 dark:bg-white/10 dark:text-neutral-400">
+              {skills.length}
+            </span>
+
+            {average != null && (
+              <span className={cn("text-[10px] sm:text-[11px]", soft)}>
+                {average}%
+              </span>
+            )}
+          </div>
+
+          <p className={cn("mt-1 hidden text-xs leading-5 sm:block", soft)}>
+            {category?.description ?? config.description}
+          </p>
         </div>
-      </section>
-    </Reveal>
+      </div>
+
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2.5 xl:grid-cols-3">
+        {skills.map((skill, index) => (
+          <li
+            key={`${skillName(skill)}-${index}`}
+            className={cn(
+              "min-w-0",
+              index >= MOBILE_SKILL_LIMIT && !expanded && "hidden sm:block",
+            )}
+          >
+            <SkillTile
+              skill={skill}
+              usedIn={projectCount(skillName(skill))}
+              onOpen={() => onOpen({ skill, category })}
+            />
+          </li>
+        ))}
+      </ul>
+
+      {skills.length > MOBILE_SKILL_LIMIT && (
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          className={cn(
+            "mt-3 flex min-h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-white/10 dark:text-neutral-300 dark:hover:bg-white/5 sm:hidden",
+            focus,
+          )}
+        >
+          {expanded ? "Show fewer skills" : `Show all ${skills.length} skills`}
+          <ArrowRight
+            size={13}
+            className={cn("transition-transform", expanded && "rotate-180")}
+          />
+        </button>
+      )}
+    </div>
   );
 }
 
-function SkillDetail({ data, relatedProjects, onOpenProject }) {
+function DetailHead({ icon: Icon, children }) {
+  return (
+    <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+      <Icon size={15} />
+      {children}
+    </h4>
+  );
+}
+
+function BulletList({ items, icon: Icon = Check }) {
+  return (
+    <ul className="space-y-2 sm:space-y-2.5">
+      {items.map((item, index) => (
+        <li
+          key={index}
+          className={cn(
+            "flex items-start gap-2.5 text-sm leading-6 sm:gap-3 sm:leading-7",
+            muted,
+          )}
+        >
+          <Icon
+            size={15}
+            className="mt-1 shrink-0 text-neutral-900 dark:text-white"
+          />
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Skill detail modal                                                  */
+/* ------------------------------------------------------------------ */
+
+function SkillDetail({
+  data,
+  relatedProjects,
+  siblings,
+  onClose,
+  onSelect,
+}) {
   if (!data) return null;
+
   const { skill, category } = data;
+  const object = typeof skill === "object" && skill ? skill : {};
   const name = skillName(skill);
   const percent = skillPercent(skill);
   const label = levelLabel(skill);
-  const description = typeof skill === "object" ? skill?.description : null;
-  const relatedIds =
-    typeof skill === "object" && Array.isArray(skill?.related) ? skill.related : [];
 
-  const directlyRelated = relatedProjects.filter((p) =>
-    relatedIds.includes(p?.slug ?? p?.id)
+  const about = firstOf(object, "description", "about", "summary");
+
+  const learned = toList(
+    firstOf(object, "learned", "learnings", "whatILearned", "learning"),
+  )
+    .map(textOf)
+    .filter(Boolean);
+
+  const topics = toList(
+    firstOf(object, "topics", "concepts", "keywords"),
+  )
+    .map(textOf)
+    .filter(Boolean);
+
+  const usedFor = toList(firstOf(object, "usedFor", "useCases"))
+    .map(textOf)
+    .filter(Boolean);
+
+  const nextUp = toList(firstOf(object, "next", "nextGoal", "goals"))
+    .map(textOf)
+    .filter(Boolean);
+
+  const since = firstOf(object, "since", "experience", "years");
+
+  const resources = toList(firstOf(object, "resources", "links"))
+    .map((resource) =>
+      typeof resource === "string"
+        ? {
+            title: resource,
+            url: /^https?:/.test(resource) ? resource : null,
+          }
+        : {
+            title: resource?.title ?? resource?.label ?? resource?.url,
+            url: resource?.url ?? resource?.href ?? null,
+          },
+    )
+    .filter((resource) => resource.title);
+
+  const relatedIds = Array.isArray(object.related) ? object.related : [];
+
+  const direct = relatedProjects.filter((project) =>
+    relatedIds.includes(project?.slug ?? project?.id),
   );
-  const relatedList = directlyRelated.length ? directlyRelated : relatedProjects;
+
+  const list = direct.length ? direct : relatedProjects;
+
+  const projectLearnings = list
+    .flatMap((project) => toList(project?.learnings).map(textOf))
+    .filter(Boolean)
+    .slice(0, 4);
+
+  const stats = [
+    { label: "Level", value: label ?? "—" },
+    {
+      label: "Proficiency",
+      value: percent != null ? `${percent}%` : "—",
+    },
+    { label: "Projects", value: list.length },
+    since ? { label: "Experience", value: String(since) } : null,
+  ].filter(Boolean);
 
   return (
-    <div className="p-6 sm:p-8">
-      <div className="flex items-center gap-4 pr-10">
-        <TechnologyLogo name={name} size="lg" />
+    <div className="space-y-5 p-4 sm:space-y-7 sm:p-8">
+      <div className="flex items-center gap-3 pr-9 sm:gap-4 sm:pr-10">
+        <TechLogo name={name} size="lg" />
+
         <div className="min-w-0">
-          <h3 className="truncate text-2xl font-semibold tracking-tight">
+          <h3 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">
             {name}
           </h3>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <p className={cn("mt-1 text-xs sm:text-sm", soft)}>
             {categoryName(category)}
           </p>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-neutral-200 p-4 dark:border-white/10">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">Level</p>
-          <p className="mt-1 text-sm font-semibold">{label ?? "—"}</p>
-        </div>
-        <div className="rounded-2xl border border-neutral-200 p-4 dark:border-white/10">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">Proficiency</p>
-          <p className="mt-1 text-sm font-semibold tabular-nums">
-            {percent != null ? `${percent}%` : "—"}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-neutral-200 p-4 dark:border-white/10">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">Projects</p>
-          <p className="mt-1 text-sm font-semibold">{relatedList.length}</p>
-        </div>
+      <div>
+        <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl bg-neutral-50 p-3 dark:bg-white/5 sm:p-3.5"
+            >
+              <dt className={cn("text-[11px] sm:text-xs", soft)}>
+                {stat.label}
+              </dt>
+              <dd className="mt-1.5 break-words text-sm font-semibold tabular-nums">
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        {percent != null && (
+          <div className="mt-4">
+            <Bar value={percent} />
+          </div>
+        )}
       </div>
 
-      {percent != null && (
-        <div className="mt-5">
-          <div className="mb-2 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">
-            <span>Proficiency</span>
-            <span className="tabular-nums">{percent}%</span>
-          </div>
-          <ProgressBar value={percent} />
+      {about && (
+        <div>
+          <DetailHead icon={Lightbulb}>About</DetailHead>
+          <p className={cn("text-sm leading-6 sm:leading-7", muted)}>
+            {about}
+          </p>
         </div>
       )}
 
-      {description && (
-        <p className="mt-5 text-sm leading-7 text-neutral-600 dark:text-neutral-400">
-          {description}
-        </p>
+      {learned.length > 0 && (
+        <div>
+          <DetailHead icon={BookOpen}>What I&apos;ve learned</DetailHead>
+          <BulletList items={learned} />
+        </div>
       )}
 
-      <div className="mt-7">
-        <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          Where I&apos;ve used it
-        </h4>
-        {relatedList.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+      {topics.length > 0 && (
+        <div>
+          <DetailHead icon={ListChecks}>Concepts &amp; topics</DetailHead>
+          <ul className="flex flex-wrap gap-2">
+            {topics.map((topic, index) => (
+              <li
+                key={`${topic}-${index}`}
+                className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-700 dark:border-white/10 dark:text-neutral-300"
+              >
+                {topic}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {usedFor.length > 0 && (
+        <div>
+          <DetailHead icon={Target}>What I use it for</DetailHead>
+          <BulletList items={usedFor} icon={ArrowRight} />
+        </div>
+      )}
+
+      {projectLearnings.length > 0 && (
+        <div>
+          <DetailHead icon={Sparkles}>
+            Lessons from building projects
+          </DetailHead>
+          <BulletList items={projectLearnings} icon={Lightbulb} />
+        </div>
+      )}
+
+      <div>
+        <DetailHead icon={Briefcase}>Where I&apos;ve used it</DetailHead>
+
+        {list.length === 0 ? (
+          <p className={cn("text-sm", soft)}>
             No project lists this skill yet.
           </p>
         ) : (
-          <div className="mt-3 space-y-2">
-            {relatedList.map((project, i) => (
-              <button
-                key={`${projectTitle(project)}-${i}`}
-                type="button"
-                onClick={() => onOpenProject(project)}
-                className="group flex w-full items-center gap-3 rounded-2xl border border-neutral-200 p-2.5 text-left transition hover:border-neutral-400 dark:border-white/10 dark:hover:border-white/25"
-              >
-                <ProjectImage
-                  src={projectImages(project)[0]}
-                  alt={projectTitle(project)}
-                  className="h-12 w-16 shrink-0 rounded-xl"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {projectTitle(project)}
-                  </p>
-                  <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                    {project?.shortDescription ?? project?.description ?? ""}
-                  </p>
-                </div>
-                <ArrowUpRight
-                  size={15}
-                  className="text-neutral-400 transition group-hover:text-neutral-800 dark:group-hover:text-white"
-                />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  CORE STRENGTHS                                                     */
-/* ------------------------------------------------------------------ */
-
-function StrengthsSection({ items, onOpen }) {
-  if (!items.length) return null;
-
-  return (
-    <section className="border-b border-neutral-200/80 dark:border-white/[0.08]">
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-        <Reveal>
-          <SectionLabel>Core strengths</SectionLabel>
-          <h2 className="text-3xl font-semibold tracking-[-0.04em] text-neutral-900 dark:text-white sm:text-4xl">
-            Where I&apos;m strongest
-          </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-neutral-500 dark:text-neutral-400 sm:text-base">
-            The skills I reach for first when starting a new project — marked
-            as <span className="font-medium text-neutral-700 dark:text-neutral-300">featured</span> in the toolkit.
-          </p>
-        </Reveal>
-
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-          {items.map(({ skill, category, percent }, i) => (
-            <Reveal key={`${skillName(skill)}-${i}`} delay={i * 60}>
-              <button
-                type="button"
-                onClick={() => onOpen({ skill, category })}
-                className="group flex h-full w-full flex-col items-start gap-5 rounded-2xl border border-neutral-200/80 bg-white p-5 text-left transition duration-200 hover:-translate-y-0.5 hover:border-neutral-400 dark:border-white/[0.09] dark:bg-white/[0.025] dark:hover:border-white/25 sm:p-6"
-              >
-                <div className="flex w-full items-center justify-between">
-                  <TechnologyLogo name={skillName(skill)} />
-                  {percent != null && <ProgressRing value={percent} size={56} />}
-                </div>
-                <div>
-                  <p className="text-base font-semibold tracking-tight text-neutral-900 dark:text-white">
-                    {skillName(skill)}
-                  </p>
-                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                    {categoryName(category)}
-                    {levelLabel(skill) ? ` · ${levelLabel(skill)}` : ""}
-                  </p>
-                </div>
-              </button>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  ROADMAP                                                            */
-/* ------------------------------------------------------------------ */
-
-function RoadmapSection({ items }) {
-  const [filter, setFilter] = useState("all");
-
-  const enriched = items.map((item) => ({ item, state: roadmapState(item) }));
-  const counts = {
-    all: enriched.length,
-    progress: enriched.filter((e) => e.state === "progress").length,
-    planned: enriched.filter((e) => e.state === "planned").length,
-    done: enriched.filter((e) => e.state === "done").length,
-  };
-  const visible = enriched.filter((e) => filter === "all" || e.state === filter);
-
-  if (!items.length) return null;
-
-  const stateLabel = {
-    done: "Completed",
-    progress: "In progress",
-    planned: "Up next",
-  };
-
-  return (
-    <section className="border-b border-neutral-200/80 bg-white/60 dark:border-white/[0.08] dark:bg-white/[0.015]">
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-        <Reveal>
-          <SectionLabel>Continuous learning</SectionLabel>
-          <h2 className="text-3xl font-semibold tracking-[-0.04em] text-neutral-900 dark:text-white sm:text-4xl">
-            Always learning. Always building.
-          </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-neutral-500 dark:text-neutral-400 sm:text-base">
-            I keep strengthening my fundamentals and exploring tools that help
-            me build better, more reliable applications.
-          </p>
-        </Reveal>
-
-        <div className="mt-8 grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-          <Reveal delay={40}>
-            <div className="lg:sticky lg:top-24 lg:self-start">
-              <div className="flex flex-wrap gap-2">
-                <Chip
-                  active={filter === "all"}
-                  onClick={() => setFilter("all")}
-                  count={counts.all}
-                >
-                  All
-                </Chip>
-                <Chip
-                  active={filter === "progress"}
-                  onClick={() => setFilter("progress")}
-                  count={counts.progress}
-                >
-                  In progress
-                </Chip>
-                <Chip
-                  active={filter === "planned"}
-                  onClick={() => setFilter("planned")}
-                  count={counts.planned}
-                >
-                  Up next
-                </Chip>
-                <Chip
-                  active={filter === "done"}
-                  onClick={() => setFilter("done")}
-                  count={counts.done}
-                >
-                  Completed
-                </Chip>
-              </div>
-            </div>
-          </Reveal>
-
-          <div className="divide-y divide-neutral-200 dark:divide-white/[0.08]">
-            {visible.length === 0 && (
-              <p className="py-6 text-sm text-neutral-500 dark:text-neutral-400">
-                Nothing here yet.
-              </p>
-            )}
-
-            {visible.map(({ item, state }, index) => {
-              const title = item?.title ?? item?.name ?? item?.topic ?? "Learning goal";
-              const description = item?.description ?? item?.summary ?? "";
-              const StateIcon =
-                state === "done"
-                  ? Check
-                  : state === "progress"
-                    ? Rocket
-                    : Target;
+          <ul className="space-y-2">
+            {list.map((project, index) => {
+              const description =
+                project?.tagline ??
+                project?.shortDescription ??
+                project?.description ??
+                "";
 
               return (
-                <Reveal key={`${title}-${index}`} delay={index * 50}>
-                  <div className="flex gap-4 py-5">
-                    <span
-                      className={cn(
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border",
-                        STATUS_STYLES[state]
-                      )}
-                    >
-                      <StateIcon size={16} />
-                    </span>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-                          {title}
-                        </h3>
-                        <span
-                          className={cn(
-                            "rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                            STATUS_STYLES[state]
-                          )}
-                        >
-                          {item?.status ?? stateLabel[state]}
-                        </span>
-                      </div>
+                <li key={`${projectTitle(project)}-${index}`}>
+                  <Link
+                    to={
+                      project?.slug
+                        ? `/projects/${project.slug}`
+                        : "/projects"
+                    }
+                    onClick={onClose}
+                    className={cn(
+                      "group flex items-center justify-between gap-3 rounded-xl border border-neutral-200 p-3 dark:border-white/10 sm:p-3.5",
+                      hoverCard,
+                      focus,
+                    )}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">
+                        {projectTitle(project)}
+                      </span>
 
                       {description && (
-                        <p className="mt-1 text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+                        <span
+                          className={cn(
+                            "mt-0.5 hidden line-clamp-2 text-xs leading-5 sm:block",
+                            soft,
+                          )}
+                        >
                           {description}
-                        </p>
+                        </span>
                       )}
-                    </div>
-                  </div>
-                </Reveal>
+                    </span>
+
+                    <ArrowUpRight
+                      size={16}
+                      className="shrink-0 text-neutral-400"
+                    />
+                  </Link>
+                </li>
               );
             })}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  PROJECTS                                                           */
-/* ------------------------------------------------------------------ */
-
-function ProjectCard({ project, onOpen, onTech, activeTech }) {
-  const title = projectTitle(project);
-  const description =
-    project?.shortDescription ??
-    project?.description ??
-    "A project built with modern development tools.";
-  const technologies = projectTechs(project);
-  const status = projectStatus(project);
-  const { github, live } = projectLinks(project);
-  const images = projectImages(project);
-
-  return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-neutral-400 hover:shadow-sm dark:border-white/[0.09] dark:bg-white/[0.025] dark:hover:border-white/25">
-      <button
-        type="button"
-        onClick={() => onOpen(project)}
-        className="relative block text-left"
-        aria-label={`Open ${title}`}
-      >
-        <ProjectImage
-          src={images[0]}
-          alt={`${title} preview`}
-          className="aspect-[16/10] w-full transition duration-500 group-hover:scale-[1.03]"
-        />
-
-        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-          {project?.featured && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-900/90 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur dark:bg-white/90 dark:text-neutral-900">
-              <Star size={10} /> Featured
-            </span>
-          )}
-          {status && (
-            <span
-              className={cn(
-                "rounded-full border px-2.5 py-1 text-[10px] font-medium backdrop-blur",
-                STATUS_STYLES[status.tone]
-              )}
-            >
-              {status.label}
-            </span>
-          )}
-        </div>
-
-        {images.length > 1 && (
-          <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[10px] text-white backdrop-blur">
-            <ImageIcon size={10} /> {images.length}
-          </span>
-        )}
-      </button>
-
-      <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            {(project?.category || project?.year) && (
-              <p className="mb-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-                {[project?.category, project?.year].filter(Boolean).join(" · ")}
-              </p>
-            )}
-            <h3 className="text-base font-semibold tracking-tight text-neutral-900 dark:text-white">
-              {title}
-            </h3>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-1">
-            {github && (
-              <a
-                href={github}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${title} source code`}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-white/[0.07] dark:hover:text-white"
-              >
-                <Github size={16} />
-              </a>
-            )}
-            {live && (
-              <a
-                href={live}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${title} live demo`}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-white/[0.07] dark:hover:text-white"
-              >
-                <ExternalLink size={16} />
-              </a>
-            )}
-          </div>
-        </div>
-
-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-          {description}
-        </p>
-
-        {technologies.length > 0 && (
-          <div className="mt-auto flex flex-wrap gap-1.5 pt-5">
-            {technologies.slice(0, 5).map((name, i) => (
-              <button
-                key={`${name}-${i}`}
-                type="button"
-                onClick={() => onTech(name)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium transition",
-                  canonical(activeTech) === canonical(name) && activeTech
-                    ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
-                    : "border-neutral-200 text-neutral-600 hover:border-neutral-400 dark:border-white/10 dark:text-neutral-400 dark:hover:border-white/30"
-                )}
-              >
-                {name}
-              </button>
-            ))}
-            {technologies.length > 5 && (
-              <span className="px-1 py-1 text-[10px] text-neutral-400">
-                +{technologies.length - 5}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </article>
-  );
-}
-
-function ProjectDetailModal({ project, onClose }) {
-  const [active, setActive] = useState(0);
-  useEffect(() => setActive(0), [project]);
-
-  if (!project) return null;
-
-  const title = projectTitle(project);
-  const images = projectImages(project);
-  const technologies = projectTechs(project);
-  const status = projectStatus(project);
-  const { github, live } = projectLinks(project);
-  const features = Array.isArray(project?.features) ? project.features : [];
-  const href = projectSlug(project) ? `/projects/${project.slug}` : null;
-
-  const go = (step) =>
-    setActive((current) => (current + step + images.length) % images.length);
-
-  return (
-    <div>
-      <div className="relative">
-        <ProjectImage
-          src={images[active]}
-          alt={`${title} screenshot ${active + 1}`}
-          className="aspect-[16/9] w-full"
-        />
-        {images.length > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              aria-label="Previous image"
-              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/75"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              aria-label="Next image"
-              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/75"
-            >
-              <ChevronRight size={18} />
-            </button>
-            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-              {images.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setActive(i)}
-                  aria-label={`Show image ${i + 1}`}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all",
-                    i === active ? "w-5 bg-white" : "w-1.5 bg-white/55"
-                  )}
-                />
-              ))}
-            </div>
-          </>
+          </ul>
         )}
       </div>
 
-      <div className="p-6 sm:p-8">
-        <div className="flex flex-wrap items-center gap-2">
-          {status && (
-            <span
-              className={cn(
-                "rounded-full border px-2.5 py-1 text-[11px] font-medium",
-                STATUS_STYLES[status.tone]
-              )}
-            >
-              {status.label}
-            </span>
-          )}
-          {project?.category && (
-            <span className="rounded-full border border-neutral-200 px-2.5 py-1 text-[11px] text-neutral-500 dark:border-white/10 dark:text-neutral-400">
-              {project.category}
-            </span>
-          )}
-          {project?.year && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-neutral-500">
-              <Calendar size={11} /> {project.year}
-            </span>
-          )}
+      {nextUp.length > 0 && (
+        <div>
+          <DetailHead icon={Rocket}>What&apos;s next</DetailHead>
+          <BulletList items={nextUp} icon={ArrowRight} />
         </div>
+      )}
 
-        <h3 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-          {title}
-        </h3>
-        <p className="mt-3 text-sm leading-7 text-neutral-600 dark:text-neutral-400">
-          {project?.description ?? project?.shortDescription}
-        </p>
-
-        {features.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
-              Key features
-            </h4>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {features.map((feature, i) => {
-                const name =
-                  typeof feature === "string" ? feature : feature?.name;
-                return (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+      {resources.length > 0 && (
+        <div>
+          <DetailHead icon={ExternalLink}>Resources I used</DetailHead>
+          <ul className="space-y-2">
+            {resources.map((resource, index) => (
+              <li key={`${resource.title}-${index}`}>
+                {resource.url ? (
+                  <a
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "inline-flex items-center gap-2 break-all text-sm font-medium underline-offset-4 hover:underline",
+                      focus,
+                    )}
                   >
-                    <Check
-                      size={15}
-                      className="mt-0.5 shrink-0 text-neutral-400 dark:text-neutral-500"
-                    />
-                    {name}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-
-        {technologies.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
-              Built with
-            </h4>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {technologies.map((name, i) => (
-                <span
-                  key={`${name}-${i}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-neutral-200 py-1 pl-1 pr-3 text-xs dark:border-white/10"
-                >
-                  <TechnologyLogo name={name} size="sm" />
-                  {name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          {live && (
-            <a
-              href={live}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
-            >
-              Live demo <ExternalLink size={15} />
-            </a>
-          )}
-          {github && (
-            <a
-              href={github}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-5 py-2.5 text-sm font-medium text-neutral-800 transition hover:border-neutral-400 hover:bg-neutral-50 dark:border-white/10 dark:bg-white/[0.035] dark:text-neutral-200 dark:hover:border-white/25 dark:hover:bg-white/[0.07]"
-            >
-              <Github size={15} /> Source code
-            </a>
-          )}
-          {href && (
-            <Link
-              to={href}
-              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-5 py-2.5 text-sm font-medium text-neutral-800 transition hover:border-neutral-400 hover:bg-neutral-50 dark:border-white/10 dark:bg-white/[0.035] dark:text-neutral-200 dark:hover:border-white/25 dark:hover:bg-white/[0.07]"
-            >
-              Full case study <ArrowRight size={15} />
-            </Link>
-          )}
+                    {resource.title}
+                    <ExternalLink size={12} className="shrink-0" />
+                  </a>
+                ) : (
+                  <span className={cn("text-sm", muted)}>
+                    {resource.title}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      )}
+
+      {siblings.length > 0 && (
+        <div>
+          <DetailHead icon={Layers}>
+            More in {categoryName(category)}
+          </DetailHead>
+
+          <ul className="flex flex-wrap gap-2">
+            {siblings.slice(0, 10).map((sibling, index) => (
+              <li key={`${skillName(sibling)}-${index}`}>
+                <button
+                  type="button"
+                  onClick={() => onSelect({ skill: sibling, category })}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white py-1 pl-1 pr-3 text-xs font-medium transition hover:border-neutral-900 dark:border-white/10 dark:bg-white/5 dark:hover:border-white",
+                    focus,
+                  )}
+                >
+                  <TechLogo name={skillName(sibling)} size="sm" />
+                  {skillName(sibling)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
 
-function ProjectsSection({ allProjects, onOpen }) {
-  const [category, setCategory] = useState("all");
-  const [tech, setTech] = useState("");
-  const [showAll, setShowAll] = useState(false);
-
-  const categories = useMemo(() => {
-    const map = new Map();
-    allProjects.forEach((p) => {
-      const c = primaryCategory(p);
-      if (c) map.set(c, (map.get(c) ?? 0) + 1);
-    });
-    return [...map.entries()];
-  }, [allProjects]);
-
-  const topTechs = useMemo(() => {
-    const map = new Map();
-    allProjects.forEach((p) =>
-      projectTechs(p).forEach((t) => {
-        const key = canonical(t);
-        const entry = map.get(key) ?? { name: t, count: 0 };
-        entry.count += 1;
-        map.set(key, entry);
-      })
-    );
-    return [...map.values()].sort((a, b) => b.count - a.count).slice(0, 8);
-  }, [allProjects]);
-
-  const filtered = allProjects.filter((p) => {
-    const byCategory = category === "all" || primaryCategory(p) === category;
-    const byTech =
-      !tech || projectTechs(p).some((t) => canonical(t) === canonical(tech));
-    return byCategory && byTech;
-  });
-
-  const sorted = [...filtered].sort(
-    (a, b) => Number(!!b?.featured) - Number(!!a?.featured)
-  );
-  const visible = showAll ? sorted : sorted.slice(0, 6);
-
-  if (!allProjects.length) return null;
-
-  return (
-    <section className="border-b border-neutral-200/80 dark:border-white/[0.08]">
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-        <Reveal>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <SectionLabel>Practical application</SectionLabel>
-              <h2 className="text-3xl font-semibold tracking-[-0.04em] text-neutral-900 dark:text-white sm:text-4xl">
-                Skills in action.
-              </h2>
-              <p className="mt-3 max-w-xl text-sm leading-7 text-neutral-500 dark:text-neutral-400">
-                Filter by category or technology to see where each skill was
-                put to work.
-              </p>
-            </div>
-
-            <Link
-              to="/projects"
-              className="inline-flex w-fit items-center gap-2 text-sm font-medium text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
-            >
-              View all projects <ArrowRight size={16} />
-            </Link>
-          </div>
-        </Reveal>
-
-        {categories.length > 0 && (
-          <Reveal>
-            <div className="mt-8 flex gap-2 overflow-x-auto pb-2">
-              <Chip
-                active={category === "all"}
-                onClick={() => setCategory("all")}
-                count={allProjects.length}
-              >
-                All
-              </Chip>
-              {categories.map(([name, count]) => (
-                <Chip
-                  key={name}
-                  active={category === name}
-                  onClick={() => setCategory(name)}
-                  count={count}
-                >
-                  {name}
-                </Chip>
-              ))}
-            </div>
-          </Reveal>
-        )}
-
-        {topTechs.length > 0 && (
-          <Reveal>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                Technology:
-              </span>
-              {topTechs.map(({ name }) => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() =>
-                    setTech(canonical(tech) === canonical(name) ? "" : name)
-                  }
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-[11px] transition",
-                    tech && canonical(tech) === canonical(name)
-                      ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
-                      : "border-neutral-200 text-neutral-600 hover:border-neutral-400 dark:border-white/10 dark:text-neutral-300"
-                  )}
-                >
-                  {name}
-                </button>
-              ))}
-              {tech && (
-                <button
-                  type="button"
-                  onClick={() => setTech("")}
-                  className="inline-flex items-center gap-1 text-[11px] text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                >
-                  <X size={12} /> Clear
-                </button>
-              )}
-            </div>
-          </Reveal>
-        )}
-
-        {visible.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-neutral-300 px-6 py-14 text-center dark:border-white/15">
-            <FileCode2 size={24} className="mx-auto mb-3 text-neutral-400" />
-            <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-              No projects match these filters
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setCategory("all");
-                setTech("");
-              }}
-              className="mt-4 rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/[0.06]"
-            >
-              Reset filters
-            </button>
-          </div>
-        ) : (
-          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-            {visible.map((project, index) => (
-              <Reveal key={`${projectTitle(project)}-${index}`} delay={index * 50}>
-                <ProjectCard
-                  project={project}
-                  onOpen={onOpen}
-                  onTech={(name) =>
-                    setTech(canonical(tech) === canonical(name) ? "" : name)
-                  }
-                  activeTech={tech}
-                />
-              </Reveal>
-            ))}
-          </div>
-        )}
-
-        {sorted.length > 6 && (
-          <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setShowAll((v) => !v)}
-              className="rounded-full border border-neutral-300 px-5 py-2.5 text-sm font-medium transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/[0.06]"
-            >
-              {showAll ? "Show fewer" : `Show all ${sorted.length} projects`}
-            </button>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function primaryCategory(p) {
-  return (
-    String(p?.category ?? "").split(" / ")[0] || p?.filters?.[0] || ""
-  );
-}
-
 /* ------------------------------------------------------------------ */
-/*  PAGE                                                               */
+/* Main page                                                           */
 /* ------------------------------------------------------------------ */
 
 export default function Skills() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
-  const [sort, setSort] = useState("default");
-  const [view, setView] = useState("grid");
   const [skillModal, setSkillModal] = useState(null);
-  const [projectModal, setProjectModal] = useState(null);
 
   useEffect(() => {
     document.title = "Skills — Suraj Kumar";
+
     return () => {
       document.title = "Suraj Kumar — Full-Stack Web Developer";
     };
@@ -1509,22 +1151,19 @@ export default function Skills() {
 
   const totalSkillCount = categories.reduce(
     (total, category) =>
-      total + (Array.isArray(category?.skills) ? category.skills.length : 0),
-    0
+      total +
+      (Array.isArray(category?.skills) ? category.skills.length : 0),
+    0,
   );
-
-  const categoryOptions = categories.map((category) => ({
-    id: categoryId(category),
-    name: categoryName(category),
-    count: Array.isArray(category?.skills) ? category.skills.length : 0,
-  }));
 
   const projectsForSkill = (name) => {
     const key = canonical(name);
-    return allProjects.filter((p) =>
-      projectTechs(p).some((t) => canonical(t) === key)
+
+    return allProjects.filter((project) =>
+      projectTechs(project).some((tech) => canonical(tech) === key),
     );
   };
+
   const projectCount = (name) => projectsForSkill(name).length;
 
   const filteredCategories = useMemo(() => {
@@ -1532,504 +1171,1124 @@ export default function Skills() {
 
     return categories
       .map((category) => {
-        const allSkills = Array.isArray(category?.skills) ? category.skills : [];
-        if (activeCategory !== "all" && categoryId(category) !== activeCategory)
+        if (
+          activeCategory !== "all" &&
+          categoryId(category) !== activeCategory
+        ) {
           return null;
+        }
+
+        const allSkills = Array.isArray(category?.skills)
+          ? category.skills
+          : [];
 
         const categoryMatches =
           !!query &&
           normalise(
-            `${categoryName(category)} ${category?.description ?? ""}`
+            `${categoryName(category)} ${category?.description ?? ""}`,
           ).includes(query);
 
-        let skills = allSkills.filter((skill) => {
-          const text = normalise(
+        const skills = allSkills.filter((skill) => {
+          const searchableText = normalise(
             `${skillName(skill)} ${
               typeof skill === "object" ? skill?.description ?? "" : ""
-            }`
+            }`,
           );
-          const matchesQuery = !query || categoryMatches || text.includes(query);
-          const label = levelLabel(skill);
+
+          const matchesQuery =
+            !query || categoryMatches || searchableText.includes(query);
+
           const matchesLevel =
-            levelFilter === "all" || label === levelFilter;
+            levelFilter === "all" || levelLabel(skill) === levelFilter;
+
           return matchesQuery && matchesLevel;
         });
-
-        if (sort === "name") {
-          skills = [...skills].sort((a, b) =>
-            skillName(a).localeCompare(skillName(b))
-          );
-        } else if (sort === "level") {
-          skills = [...skills].sort(
-            (a, b) => (skillPercent(b) ?? -1) - (skillPercent(a) ?? -1)
-          );
-        }
 
         return skills.length ? { category, skills } : null;
       })
       .filter(Boolean);
-  }, [categories, search, activeCategory, levelFilter, sort]);
+  }, [categories, search, activeCategory, levelFilter]);
 
-  const visibleSkillCount = filteredCategories.reduce(
+  const visibleCount = filteredCategories.reduce(
     (total, entry) => total + entry.skills.length,
-    0
+    0,
+  );
+
+  const flatSkills = useMemo(
+    () =>
+      categories.flatMap((category) =>
+        (Array.isArray(category?.skills) ? category.skills : []).map(
+          (skill) => ({
+            skill,
+            category,
+            percent: skillPercent(skill),
+          }),
+        ),
+      ),
+    [categories],
   );
 
   const strengths = useMemo(() => {
-    const flat = [];
-    categories.forEach((category) =>
-      (Array.isArray(category?.skills) ? category.skills : []).forEach((skill) =>
-        flat.push({ skill, category, percent: skillPercent(skill) })
-      )
+    const featured = flatSkills.filter(
+      (entry) =>
+        typeof entry.skill === "object" && entry.skill?.featured,
     );
 
-    const featured = flat.filter(
-      (e) => typeof e.skill === "object" && e.skill?.featured
-    );
     if (featured.length) return featured.slice(0, 4);
 
-    const rated = flat
-      .filter((e) => e.percent != null)
-      .sort((a, b) => b.percent - a.percent);
-    return rated.slice(0, 4);
-  }, [categories]);
+    return flatSkills
+      .filter((entry) => entry.percent != null)
+      .sort((a, b) => b.percent - a.percent)
+      .slice(0, 4);
+  }, [flatSkills]);
 
-  const ratedPercents = categories
-    .flatMap((c) => (Array.isArray(c?.skills) ? c.skills : []))
-    .map(skillPercent)
-    .filter((p) => p != null);
-  const averageLevel = ratedPercents.length
-    ? Math.round(ratedPercents.reduce((a, b) => a + b, 0) / ratedPercents.length)
+  const heroSkills = useMemo(
+    () => (strengths.length ? strengths : flatSkills.slice(0, 5)).slice(0, 5),
+    [strengths, flatSkills],
+  );
+
+  const rated = flatSkills
+    .map((entry) => entry.percent)
+    .filter((percent) => percent != null);
+
+  const average = rated.length
+    ? Math.round(
+        rated.reduce((sum, percent) => sum + percent, 0) / rated.length,
+      )
     : null;
 
-  const completedProjects = allProjects.filter(
-    (p) => projectStatus(p)?.tone === "done"
-  ).length;
+  const hasLevels = rated.length > 0;
 
-  const hasLevels = ratedPercents.length > 0;
   const filtersActive =
-    search || activeCategory !== "all" || levelFilter !== "all" || sort !== "default";
+    Boolean(search) ||
+    activeCategory !== "all" ||
+    levelFilter !== "all";
 
   const resetFilters = () => {
     setSearch("");
     setActiveCategory("all");
     setLevelFilter("all");
-    setSort("default");
   };
 
-  const openProjectFromSkill = (project) => {
-    setSkillModal(null);
-    setProjectModal(project);
-  };
+  const featuredProjects = useMemo(
+    () =>
+      [...allProjects]
+        .filter((project) => project?.slug)
+        .sort(
+          (a, b) => Number(!!b?.featured) - Number(!!a?.featured),
+        )
+        .slice(0, 3),
+    [allProjects],
+  );
 
-  const statCards = [
+  const categoryStats = useMemo(
+    () =>
+      categories
+        .map((category) => {
+          const skills = Array.isArray(category?.skills)
+            ? category.skills
+            : [];
+
+          const percentages = skills
+            .map(skillPercent)
+            .filter((value) => value != null);
+
+          return percentages.length
+            ? {
+                category,
+                count: skills.length,
+                avg: Math.round(
+                  percentages.reduce((sum, value) => sum + value, 0) /
+                    percentages.length,
+                ),
+              }
+            : null;
+        })
+        .filter(Boolean),
+    [categories],
+  );
+
+  const levelStats = useMemo(() => {
+    const map = new Map();
+
+    flatSkills.forEach(({ skill }) => {
+      const level = levelLabel(skill);
+
+      if (level) {
+        map.set(level, (map.get(level) ?? 0) + 1);
+      }
+    });
+
+    const total = [...map.values()].reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+
+    return [...map.entries()].map(([label, count]) => ({
+      label,
+      count,
+      share: total ? Math.round((count / total) * 100) : 0,
+    }));
+  }, [flatSkills]);
+
+  const topUsed = useMemo(() => {
+    const rows = flatSkills
+      .map(({ skill, category }) => ({
+        skill,
+        category,
+        n: projectCount(skillName(skill)),
+      }))
+      .filter((row) => row.n > 0)
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 8);
+
+    const max = rows[0]?.n ?? 1;
+
+    return rows.map((row) => ({
+      ...row,
+      share: Math.round((row.n / max) * 100),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flatSkills, allProjects]);
+
+  const certifications = toList(
+    skillsData.certifications ?? skillsData.courses,
+  ).filter(Boolean);
+
+  const principles = toList(
+    skillsData.principles ??
+      skillsData.workflow ??
+      skillsData.approach,
+  ).filter(Boolean);
+
+  const sections = useMemo(
+    () =>
+      [
+        {
+          id: "strengths",
+          label: "Strengths",
+          icon: Star,
+          show: strengths.length > 0,
+        },
+        {
+          id: "toolkit",
+          label: "Skills",
+          icon: Wrench,
+          show: true,
+        },
+        {
+          id: "overview",
+          label: "Overview",
+          icon: BarChart3,
+          show: categoryStats.length > 0,
+        },
+        {
+          id: "usage",
+          label: "Most used",
+          icon: TrendingUp,
+          show: topUsed.length > 0,
+        },
+        {
+          id: "learning",
+          label: "Learning",
+          icon: Lightbulb,
+          show: roadmap.length > 0,
+        },
+        {
+          id: "certs",
+          label: "Courses",
+          icon: Award,
+          show: certifications.length > 0,
+        },
+        {
+          id: "approach",
+          label: "Approach",
+          icon: ListChecks,
+          show: principles.length > 0,
+        },
+        {
+          id: "projects",
+          label: "Projects",
+          icon: Briefcase,
+          show: featuredProjects.length > 0,
+        },
+      ].filter((section) => section.show),
+    [
+      strengths.length,
+      roadmap.length,
+      featuredProjects.length,
+      categoryStats.length,
+      topUsed.length,
+      certifications.length,
+      principles.length,
+    ],
+  );
+
+  const active = useScrollSpy(sections.map((section) => section.id));
+
+  const brief = [
+    { icon: Braces, label: "Skills", value: totalSkillCount },
+    { icon: Layers, label: "Categories", value: categories.length },
+    { icon: Briefcase, label: "Projects", value: allProjects.length },
     {
-      value: totalSkillCount,
-      label: "Listed skills",
-      description: "Across all categories",
-      icon: Braces,
+      icon: Target,
+      label: "Avg level",
+      value: average != null ? `${average}%` : null,
     },
-    {
-      value: String(categories.length).padStart(2, "0"),
-      label: "Categories",
-      description: "Disciplines I work in",
-      icon: Layers3,
-    },
-    {
-      value: allProjects.length,
-      label: "Projects built",
-      description: "Where skills are applied",
-      icon: Briefcase,
-    },
-    {
-      value: averageLevel != null ? `${averageLevel}%` : completedProjects,
-      label: averageLevel != null ? "Avg proficiency" : "Completed",
-      description: averageLevel != null
-        ? "Across all skills"
-        : "Production-ready",
-      icon: averageLevel != null ? Target : Check,
-    },
-  ];
+  ].filter((item) => item.value != null && item.value !== 0);
 
   return (
-    <main className="min-h-screen overflow-x-clip bg-[#fafafa] text-neutral-900 transition-colors duration-300 dark:bg-[#0b0b0c] dark:text-neutral-100">
-      {/* ============================================================ */}
-      {/* 1. HERO                                                      */}
-      {/* ============================================================ */}
-      <section className="relative border-b border-neutral-200/80 dark:border-white/[0.08]">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(115,115,115,0.12)_1px,transparent_0)] bg-[size:28px_28px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
-        />
-        <div className="relative mx-auto max-w-7xl px-5 pb-14 pt-8 sm:px-8 sm:pb-16 sm:pt-10 lg:px-12 lg:pb-20 lg:pt-14">
-          {/* Breadcrumb */}
-          <nav className="mb-8 flex flex-wrap items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+    <main className="min-h-screen overflow-x-clip bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+      <ReadingProgress />
+      <BackToTop />
+
+      {/* HERO */}
+      <section className="border-b border-neutral-200 dark:border-white/10">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-14 lg:px-12">
+          <nav
+            aria-label="Breadcrumb"
+            className={cn(
+              "mb-5 flex items-center gap-1.5 text-xs sm:mb-8 sm:text-sm",
+              soft,
+            )}
+          >
             <Link
               to="/"
-              className="inline-flex items-center gap-1 transition-colors hover:text-neutral-900 dark:hover:text-white"
+              className="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
             >
               <HomeIcon size={14} />
               Home
             </Link>
-            <ChevronRightIcon size={14} className="shrink-0" />
+            <ChevronRight size={14} className="shrink-0" />
             <span className="text-neutral-900 dark:text-white">Skills</span>
           </nav>
 
-          <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
-            <div className="relative z-10">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 dark:border-white/10 dark:bg-white/[0.035] dark:text-neutral-300">
-                <Sparkles size={14} />
-                Skills &amp; expertise
+          <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
+            <div>
+              <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-5">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-[11px] font-medium dark:border-white/10 dark:bg-white/5 sm:text-xs">
+                  <Sparkles size={12} />
+                  Skills &amp; expertise
+                </span>
               </div>
 
-              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.08] tracking-[-0.045em] text-neutral-900 dark:text-white sm:text-5xl md:text-6xl">
-                My technical
-                <br />
+              <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+                My technical{" "}
                 <span className="text-neutral-400 dark:text-neutral-500">
                   toolkit.
                 </span>
               </h1>
 
-              <p className="mt-6 max-w-xl text-base leading-7 text-neutral-600 dark:text-neutral-400 sm:text-lg sm:leading-8">
-                I&apos;m Suraj Kumar, a Computer Science Engineering student and
-                full-stack developer interested in building useful, responsive
-                and reliable web applications.
+              <p className={cn("mt-3 max-w-xl text-sm leading-6 sm:mt-5 sm:text-lg sm:leading-8", muted)}>
+                Computer Science Engineering student and full-stack developer
+                building useful, responsive and reliable web applications.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              {heroSkills.length > 0 && (
+                <ul className="mt-4 flex flex-wrap gap-2 sm:mt-7">
+                  {heroSkills.map(({ skill }, index) => (
+                    <li
+                      key={`${skillName(skill)}-${index}`}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white py-1 pl-1 pr-2.5 text-[11px] font-medium text-neutral-700 dark:border-white/10 dark:bg-white/5 dark:text-neutral-300 sm:gap-2 sm:pr-3 sm:text-xs",
+                        index >= 3 && "hidden sm:inline-flex",
+                      )}
+                    >
+                      <TechLogo name={skillName(skill)} size="sm" />
+                      {skillName(skill)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="mt-5 flex flex-wrap gap-2.5 sm:mt-8 sm:gap-3">
                 <a
-                  href="#skills"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+                  href="#toolkit"
+                  className={cn(
+                    "inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 text-xs font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 sm:min-h-11 sm:px-5 sm:text-sm",
+                    focus,
+                  )}
                 >
-                  Browse skills <ArrowRight size={16} />
+                  Browse skills
+                  <ArrowRight size={15} />
                 </a>
+
                 <Link
                   to="/contact"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-neutral-200 bg-white px-5 py-3 text-sm font-medium text-neutral-800 transition hover:border-neutral-400 hover:bg-neutral-50 dark:border-white/10 dark:bg-white/[0.035] dark:text-neutral-200 dark:hover:border-white/25 dark:hover:bg-white/[0.07]"
+                  className={cn(
+                    "inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 text-xs font-semibold transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/5 sm:min-h-11 sm:px-5 sm:text-sm",
+                    focus,
+                  )}
                 >
-                  Contact me <ArrowDownRight size={16} />
+                  <Mail size={15} />
+                  Contact me
                 </Link>
               </div>
-
-              <div className="mt-6">
-                <div className="flex flex-wrap gap-2">
-                  {["React", "Node.js", "WebRTC", "PostgreSQL", "Socket.IO"].map(
-                    (t) => (
-                      <span
-                        key={t}
-                        className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-600 dark:border-white/10 dark:bg-white/[0.035] dark:text-neutral-400"
-                      >
-                        {t}
-                      </span>
-                    )
-                  )}
-                </div>
-              </div>
             </div>
 
-            {/* Stats card */}
-            <div className="relative z-10">
-              <div className="overflow-hidden rounded-3xl border border-neutral-200/80 bg-white dark:border-white/[0.09] dark:bg-white/[0.025]">
-                <div className="grid grid-cols-2">
-                  {statCards.map(({ value, label, description, icon: Icon }, i) => (
-                    <div
-                      key={label}
-                      className={cn(
-                        "px-5 py-5 sm:px-6 sm:py-6",
-                        i % 2 === 1 &&
-                          "border-l border-neutral-200 dark:border-white/10",
-                        i < 2 &&
-                          "border-b border-neutral-200 dark:border-white/10"
-                      )}
-                    >
-                      <div className="mb-2 flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
-                        <Icon size={13} />
-                        <span className="text-[11px] uppercase tracking-wide">
-                          {label}
-                        </span>
-                      </div>
-                      <p className="text-2xl font-semibold tabular-nums tracking-tight text-neutral-900 dark:text-white sm:text-3xl">
-                        {value}
-                      </p>
-                      <p className="mt-1 text-[11px] leading-5 text-neutral-500 dark:text-neutral-400">
-                        {description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-start gap-4 border-t border-neutral-200 bg-neutral-50/60 px-6 py-5 dark:border-white/10 dark:bg-white/[0.02] sm:px-7">
-                  <IconBox icon={Braces} />
-                  <div>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                      Current focus
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-                      Full-stack web development, REST APIs, real-time
-                      applications and networking-focused projects.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 2. CORE STRENGTHS                                            */}
-      {/* ============================================================ */}
-      <StrengthsSection items={strengths} onOpen={setSkillModal} />
-
-      {/* ============================================================ */}
-      {/* 3. TECHNICAL SKILLS                                          */}
-      {/* ============================================================ */}
-      <section
-        id="skills"
-        className="border-b border-neutral-200/80 bg-white/60 dark:border-white/[0.08] dark:bg-white/[0.015]"
-      >
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-          <Reveal>
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <SectionLabel>Technologies &amp; tools</SectionLabel>
-                <h2 className="text-3xl font-semibold tracking-[-0.04em] text-neutral-900 dark:text-white sm:text-4xl">
-                  The stack I work with
-                </h2>
-                <p className="mt-3 max-w-xl text-sm leading-7 text-neutral-500 dark:text-neutral-400 sm:text-base">
-                  Organised by discipline. Click any skill to see my level and
-                  the projects where I&apos;ve used it.
-                </p>
-              </div>
-
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                Showing{" "}
-                <span className="font-semibold text-neutral-900 dark:text-white">
-                  {visibleSkillCount}
-                </span>{" "}
-                of {totalSkillCount} skills
-              </p>
-            </div>
-          </Reveal>
-
-          {/* TOOLBAR */}
-          <Reveal>
-            <div className="mt-8 flex flex-col gap-3 md:flex-row md:items-center">
-              <div className="relative w-full md:max-w-md">
-                <Search
-                  size={17}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
-                />
-                <input
-                  type="search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search JavaScript, React, databases..."
-                  aria-label="Search skills"
-                  className="w-full rounded-2xl border border-neutral-200 bg-white py-3 pl-11 pr-10 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-400 dark:border-white/10 dark:bg-white/[0.035] dark:text-white"
-                />
-                {search && (
-                  <button
-                    type="button"
-                    onClick={() => setSearch("")}
-                    aria-label="Clear search"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
-                  >
-                    <X size={15} />
-                  </button>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 md:ml-auto">
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  aria-label="Sort skills"
-                  className="rounded-2xl border border-neutral-200 bg-white px-3 py-3 text-sm outline-none focus:border-neutral-400 dark:border-white/10 dark:bg-[#121214] dark:text-white"
-                >
-                  {SORT_OPTIONS.filter((o) => hasLevels || o.id !== "level").map(
-                    (o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.label}
-                      </option>
-                    )
-                  )}
-                </select>
-
-                <div className="flex rounded-2xl border border-neutral-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.035]">
-                  {[
-                    { id: "grid", icon: LayoutGrid, label: "Grid view" },
-                    { id: "list", icon: List, label: "List view" },
-                  ].map(({ id, icon: Icon, label }) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setView(id)}
-                      aria-label={label}
-                      aria-pressed={view === id}
-                      className={cn(
-                        "flex h-9 w-9 items-center justify-center rounded-xl transition",
-                        view === id
-                          ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-                          : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                      )}
-                    >
-                      <Icon size={16} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* CATEGORY FILTERS */}
-          <Reveal>
-            <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
-              <Chip
-                active={activeCategory === "all"}
-                onClick={() => setActiveCategory("all")}
-                count={totalSkillCount}
-              >
-                All skills
-              </Chip>
-              {categoryOptions.map((category) => (
-                <Chip
-                  key={category.id}
-                  active={activeCategory === category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  count={category.count}
-                >
-                  {category.name}
-                </Chip>
-              ))}
-            </div>
-          </Reveal>
-
-          {/* LEVEL FILTERS */}
-          {hasLevels && (
-            <Reveal>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Level:
+            {/* COMPACT SUMMARY */}
+            <div className={cn(card, "h-fit p-3.5 sm:p-7")}>
+              <div className="mb-3 flex items-center gap-3 sm:mb-5">
+                <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl", iconBox)}>
+                  <Braces size={17} />
                 </span>
-                {LEVEL_FILTERS.map((level) => (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => setLevelFilter(level)}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-[11px] transition",
-                      levelFilter === level
-                        ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
-                        : "border-neutral-200 text-neutral-600 hover:border-neutral-400 dark:border-white/10 dark:text-neutral-300"
-                    )}
-                  >
-                    {level === "all" ? "Any" : level}
-                  </button>
-                ))}
-                {filtersActive && (
-                  <button
-                    type="button"
-                    onClick={resetFilters}
-                    className="ml-1 inline-flex items-center gap-1 text-[11px] text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                  >
-                    <X size={12} /> Reset
-                  </button>
-                )}
-              </div>
-            </Reveal>
-          )}
 
-          {/* CATEGORY CONTENT */}
-          <div className="mt-14 grid grid-cols-1 gap-x-16 gap-y-16 xl:grid-cols-2">
-            {filteredCategories.map((entry, index) => (
-              <CategorySection
-                key={categoryId(entry.category)}
-                category={entry.category}
-                skills={entry.skills}
-                index={index}
-                view={view}
-                projectCount={projectCount}
-                onOpen={setSkillModal}
-              />
-            ))}
-          </div>
-
-          {filteredCategories.length === 0 && (
-            <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 px-6 py-16 text-center dark:border-white/15">
-              <Search size={25} className="mx-auto mb-4 text-neutral-400" />
-              <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
-                No matching skills
-              </h3>
-              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-                Try another keyword or reset the filters.
-              </p>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="mt-5 rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/[0.06]"
-              >
-                Reset filters
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 4. LEARNING ROADMAP                                          */}
-      {/* ============================================================ */}
-      <RoadmapSection items={roadmap} />
-
-      {/* ============================================================ */}
-      {/* 5. PROJECTS                                                   */}
-      {/* ============================================================ */}
-      <div id="projects">
-        <ProjectsSection allProjects={allProjects} onOpen={setProjectModal} />
-      </div>
-
-      {/* ============================================================ */}
-      {/* 6. CONTACT CTA                                                */}
-      {/* ============================================================ */}
-      <section>
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-          <Reveal>
-            <div className="rounded-3xl border border-neutral-200/80 bg-white p-6 dark:border-white/[0.09] dark:bg-white/[0.025] sm:p-10 lg:p-12">
-              <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16">
-                <div className="max-w-2xl">
-                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 text-neutral-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-100">
-                    <Sparkles size={21} />
-                  </div>
-                  <SectionLabel>Let&apos;s work together</SectionLabel>
-                  <h2 className="text-3xl font-semibold tracking-[-0.04em] text-neutral-900 dark:text-white sm:text-4xl">
-                    Have an idea worth building?
+                <div>
+                  <h2 className="text-sm font-semibold leading-tight sm:text-base">
+                    Skills at a glance
                   </h2>
-                  <p className="mt-4 max-w-xl text-sm leading-7 text-neutral-600 dark:text-neutral-400 sm:text-base">
-                    Let&apos;s discuss web development, collaboration or an
-                    opportunity to build something useful.
+                  <p className={cn("hidden text-xs sm:block", soft)}>
+                    Numbers from my toolkit
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-3 lg:flex-col lg:items-stretch">
-                  <Link
-                    to="/contact"
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
-                  >
-                    Get in touch <ArrowRight size={16} />
-                  </Link>
-                  <Link
-                    to="/projects"
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-neutral-200 bg-white px-5 py-3 text-sm font-medium text-neutral-800 transition hover:border-neutral-400 hover:bg-neutral-50 dark:border-white/10 dark:bg-white/[0.035] dark:text-neutral-200 dark:hover:border-white/25 dark:hover:bg-white/[0.07]"
-                  >
-                    Explore projects <ArrowUpRight size={16} />
-                  </Link>
+              </div>
+
+              {brief.length > 0 && (
+                <dl className="grid grid-cols-2 gap-2 sm:gap-3">
+                  {brief.map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-xl bg-neutral-50 p-2.5 dark:bg-white/5 sm:p-3.5"
+                    >
+                      <dt className={cn("flex items-center gap-1.5 text-[10px] sm:text-xs", soft)}>
+                        <item.icon size={12} />
+                        {item.label}
+                      </dt>
+                      <dd className="mt-1 text-lg font-semibold tabular-nums sm:mt-1.5 sm:text-xl">
+                        {item.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              <div className="mt-3 hidden items-start gap-3 rounded-xl bg-neutral-50 p-4 dark:bg-white/5 sm:flex sm:mt-5">
+                <Target size={16} className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold">Current focus</p>
+                  <p className={cn("mt-1 text-sm leading-6", muted)}>
+                    Full-stack development, REST APIs, real-time applications
+                    and networking projects.
+                  </p>
                 </div>
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* MODALS */}
+      {/* MOBILE NAV */}
+      <nav
+        aria-label="Sections"
+        className="sticky top-16 z-30 border-b border-neutral-200 bg-neutral-50/95 backdrop-blur dark:border-white/10 dark:bg-neutral-950/95 lg:hidden"
+      >
+        <ul className="flex gap-2 overflow-x-auto px-4 py-2">
+          {sections
+            .filter(
+              (section) =>
+                section.id !== "overview" && section.id !== "usage",
+            )
+            .map((section) => (
+              <li key={section.id} className="shrink-0">
+                <a
+                  href={`#${section.id}`}
+                  className={cn(
+                    "inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition",
+                    active === section.id
+                      ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
+                      : "border-neutral-200 bg-white dark:border-white/10 dark:bg-white/5",
+                  )}
+                >
+                  <section.icon size={12} />
+                  {section.label}
+                </a>
+              </li>
+            ))}
+        </ul>
+      </nav>
+
+      {/* PAGE CONTENT */}
+      <section className="border-b border-neutral-200 dark:border-white/10">
+        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-8 sm:py-20 lg:px-12">
+          <div className="grid gap-7 lg:grid-cols-[230px_1fr] lg:gap-16">
+            {/* DESKTOP SIDEBAR */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <nav aria-label="On this page" className={cn(card, "p-3")}>
+                  <p className="px-3 pb-2 pt-1 text-sm font-semibold">
+                    On this page
+                  </p>
+
+                  <ul>
+                    {sections.map((section) => (
+                      <li key={section.id}>
+                        <a
+                          href={`#${section.id}`}
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                            active === section.id
+                              ? "bg-neutral-900 font-medium text-white dark:bg-white dark:text-neutral-900"
+                              : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5",
+                          )}
+                        >
+                          <section.icon size={14} />
+                          {section.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            </aside>
+
+            {/* MAIN CONTENT */}
+            <div className="min-w-0 space-y-10 sm:space-y-20">
+              {/* CORE STRENGTHS */}
+              {strengths.length > 0 && (
+                <Block
+                  id="strengths"
+                  icon={Star}
+                  title="Core strengths"
+                  subtitle="The skills I reach for first on a new project."
+                  count={strengths.length}
+                >
+                  <ul className="grid grid-cols-2 gap-2 sm:gap-3">
+                    {strengths.map(({ skill, category, percent }, index) => (
+                      <li key={`${skillName(skill)}-${index}`}>
+                        <button
+                          type="button"
+                          onClick={() => setSkillModal({ skill, category })}
+                          className={cn(
+                            card,
+                            "flex h-full w-full min-w-0 items-center gap-2 p-2.5 text-left sm:gap-4 sm:p-5",
+                            hoverCard,
+                            focus,
+                          )}
+                        >
+                          <TechLogo name={skillName(skill)} size="lg" />
+
+                          <div className="min-w-0 flex-1">
+                            <p className="break-words text-xs font-semibold sm:text-base">
+                              {skillName(skill)}
+                            </p>
+
+                            <p className={cn("mt-0.5 hidden truncate text-xs sm:block", soft)}>
+                              {categoryName(category)}
+                              {levelLabel(skill)
+                                ? ` · ${levelLabel(skill)}`
+                                : ""}
+                            </p>
+
+                            {percent != null && (
+                              <div className="mt-2 sm:hidden">
+                                <Bar value={percent} />
+                              </div>
+                            )}
+                          </div>
+
+                          {percent != null && <Ring value={percent} />}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </Block>
+              )}
+
+              {/* TOOLKIT */}
+              <Block
+                id="toolkit"
+                icon={Wrench}
+                title="My skills"
+                subtitle="Select a skill to view details and related projects."
+                count={`${visibleCount}/${totalSkillCount}`}
+              >
+                <div className={cn(card, "mb-3 space-y-3 p-3 sm:mb-6 sm:space-y-4 sm:p-5")}>
+                  <div className="relative">
+                    <Search
+                      size={15}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
+                    />
+
+                    <input
+                      type="search"
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search skills..."
+                      aria-label="Search skills"
+                      className="min-h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 py-2 pl-10 pr-10 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-white sm:min-h-11"
+                    />
+
+                    {search && (
+                      <button
+                        type="button"
+                        onClick={() => setSearch("")}
+                        aria-label="Clear search"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    <Chip
+                      active={activeCategory === "all"}
+                      onClick={() => setActiveCategory("all")}
+                      count={totalSkillCount}
+                    >
+                      All
+                    </Chip>
+
+                    {categories.map((category) => (
+                      <Chip
+                        key={categoryId(category)}
+                        active={activeCategory === categoryId(category)}
+                        onClick={() => setActiveCategory(categoryId(category))}
+                        count={
+                          Array.isArray(category?.skills)
+                            ? category.skills.length
+                            : 0
+                        }
+                      >
+                        {categoryName(category)}
+                      </Chip>
+                    ))}
+                  </div>
+
+                  {(hasLevels || filtersActive) && (
+                    <div className="flex flex-wrap items-center gap-2 border-t border-neutral-200 pt-3 dark:border-white/10 sm:pt-4">
+                      {hasLevels && (
+                        <>
+                          <span className={cn("text-[11px] sm:text-xs", soft)}>
+                            Level:
+                          </span>
+
+                          {LEVEL_FILTERS.map((level) => (
+                            <Chip
+                              key={level}
+                              active={levelFilter === level}
+                              onClick={() => setLevelFilter(level)}
+                            >
+                              {level === "all" ? "Any" : level}
+                            </Chip>
+                          ))}
+                        </>
+                      )}
+
+                      {filtersActive && (
+                        <button
+                          type="button"
+                          onClick={resetFilters}
+                          className={cn(
+                            "ml-auto inline-flex items-center gap-1 text-xs hover:text-neutral-900 dark:hover:text-white",
+                            soft,
+                          )}
+                        >
+                          <X size={12} />
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3 sm:space-y-4">
+                  {filteredCategories.map((entry) => (
+                    <CategoryCard
+                      key={categoryId(entry.category)}
+                      category={entry.category}
+                      skills={entry.skills}
+                      projectCount={projectCount}
+                      onOpen={setSkillModal}
+                    />
+                  ))}
+                </div>
+
+                {filteredCategories.length === 0 && (
+                  <div className={cn(card, "border-dashed px-4 py-10 text-center sm:px-6 sm:py-14")}>
+                    <Search
+                      size={22}
+                      className="mx-auto mb-3 text-neutral-400"
+                    />
+                    <p className="text-sm font-semibold sm:text-base">
+                      No matching skills
+                    </p>
+                    <p className={cn("mt-1 text-xs sm:text-sm", soft)}>
+                      Try another keyword or reset the filters.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className={cn(
+                        "mt-4 inline-flex min-h-10 items-center rounded-full border border-neutral-300 px-4 text-xs font-semibold transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/5 sm:mt-5 sm:min-h-11 sm:px-5 sm:text-sm",
+                        focus,
+                      )}
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+                )}
+              </Block>
+
+              {/* OVERVIEW: DESKTOP ONLY */}
+              {categoryStats.length > 0 && (
+                <div className="hidden sm:block">
+                  <Block
+                    id="overview"
+                    icon={BarChart3}
+                    title="Skill overview"
+                    subtitle="How my skills are spread across categories and levels."
+                  >
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className={cn(card, "p-6")}>
+                        <p className="mb-5 flex items-center gap-2 text-sm font-semibold">
+                          <TrendingUp size={15} />
+                          Average by category
+                        </p>
+
+                        <ul className="space-y-4">
+                          {categoryStats.map(({ category, avg, count }) => {
+                            const CategoryIcon = categoryConfig(category).icon;
+
+                            return (
+                              <li key={categoryId(category)}>
+                                <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
+                                  <span className="inline-flex min-w-0 items-center gap-1.5 font-medium">
+                                    <CategoryIcon size={13} className="shrink-0" />
+                                    <span className="truncate">
+                                      {categoryName(category)}
+                                    </span>
+                                  </span>
+
+                                  <span className={cn("shrink-0 text-xs tabular-nums", soft)}>
+                                    {avg}% · {count}
+                                  </span>
+                                </div>
+                                <Bar value={avg} />
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+
+                      {levelStats.length > 0 && (
+                        <div className={cn(card, "p-6")}>
+                          <p className="mb-5 flex items-center gap-2 text-sm font-semibold">
+                            <Layers size={15} />
+                            Level distribution
+                          </p>
+
+                          <ul className="space-y-4">
+                            {levelStats.map(({ label, count, share }) => (
+                              <li key={label}>
+                                <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
+                                  <span className="font-medium">{label}</span>
+                                  <span className={cn("text-xs tabular-nums", soft)}>
+                                    {count} skills · {share}%
+                                  </span>
+                                </div>
+                                <Bar value={share} />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </Block>
+                </div>
+              )}
+
+              {/* MOST USED: DESKTOP ONLY */}
+              {topUsed.length > 0 && (
+                <div className="hidden sm:block">
+                  <Block
+                    id="usage"
+                    icon={TrendingUp}
+                    title="Most used in projects"
+                    subtitle="The technologies that show up in most of my builds."
+                    count={topUsed.length}
+                  >
+                    <ul className="grid grid-cols-2 gap-3">
+                      {topUsed.map(({ skill, category, n, share }, index) => (
+                        <li key={`${skillName(skill)}-${index}`}>
+                          <button
+                            type="button"
+                            onClick={() => setSkillModal({ skill, category })}
+                            className={cn(
+                              card,
+                              "flex w-full items-center gap-4 p-4 text-left",
+                              hoverCard,
+                              focus,
+                            )}
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-xs font-semibold tabular-nums dark:bg-white/10">
+                              {index + 1}
+                            </span>
+
+                            <TechLogo name={skillName(skill)} size="md" />
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="truncate text-sm font-semibold">
+                                  {skillName(skill)}
+                                </p>
+                                <span className={cn("shrink-0 text-xs", soft)}>
+                                  {n} project{n > 1 ? "s" : ""}
+                                </span>
+                              </div>
+                              <div className="mt-2">
+                                <Bar value={share} />
+                              </div>
+                            </div>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </Block>
+                </div>
+              )}
+
+              {/* LEARNING ROADMAP */}
+              {roadmap.length > 0 && (
+                <Block
+                  id="learning"
+                  icon={Lightbulb}
+                  title="Learning roadmap"
+                  subtitle="What I'm strengthening and exploring next."
+                  count={roadmap.length}
+                >
+                  <ol className="space-y-2 sm:space-y-0">
+                    {roadmap.map((item, index) => {
+                      const state = roadmapState(item);
+                      const title =
+                        item?.title ??
+                        item?.name ??
+                        item?.topic ??
+                        "Learning goal";
+
+                      const description =
+                        item?.description ?? item?.summary ?? "";
+
+                      return (
+                        <li
+                          key={`${title}-${index}`}
+                          className="relative grid grid-cols-[1.75rem_1fr] gap-2 sm:grid-cols-[2.5rem_1fr] sm:gap-4 sm:pb-6"
+                        >
+                          {index < roadmap.length - 1 && (
+                            <span
+                              aria-hidden="true"
+                              className="absolute bottom-0 left-3.5 top-8 hidden w-px -translate-x-1/2 bg-neutral-300 dark:bg-white/20 sm:block sm:left-5 sm:top-10"
+                            />
+                          )}
+
+                          <span
+                            className={cn(
+                              "relative z-10 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold sm:h-10 sm:w-10 sm:text-sm",
+                              iconBox,
+                            )}
+                          >
+                            {index + 1}
+                          </span>
+
+                          <div className={cn(card, "min-w-0 p-3 sm:p-5")}>
+                            <div className="flex flex-wrap items-start gap-2">
+                              <h3 className="min-w-0 flex-1 text-xs font-semibold sm:text-base">
+                                {title}
+                              </h3>
+                              <StatusBadge
+                                state={state}
+                                label={item?.status}
+                              />
+                            </div>
+
+                            {description && (
+                              <p className={cn("mt-1.5 hidden text-sm leading-7 sm:block", muted)}>
+                                {description}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </Block>
+              )}
+
+              {/* COURSES */}
+              {certifications.length > 0 && (
+                <Block
+                  id="certs"
+                  icon={Award}
+                  title="Courses & certifications"
+                  subtitle="Formal learning that backs these skills."
+                  count={certifications.length}
+                >
+                  <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                    {certifications.map((certification, index) => {
+                      const title =
+                        typeof certification === "string"
+                          ? certification
+                          : certification?.title ??
+                            certification?.name ??
+                            "Course";
+
+                      const issuer =
+                        typeof certification === "object"
+                          ? certification?.issuer ??
+                            certification?.platform ??
+                            certification?.provider
+                          : null;
+
+                      const when =
+                        typeof certification === "object"
+                          ? certification?.year ?? certification?.date
+                          : null;
+
+                      const url =
+                        typeof certification === "object"
+                          ? certification?.url ?? certification?.link
+                          : null;
+
+                      const content = (
+                        <>
+                          <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 sm:rounded-xl", iconBox)}>
+                            <Award size={16} className="sm:h-[18px] sm:w-[18px]" />
+                          </span>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-2 text-xs font-semibold leading-snug sm:text-sm">
+                              {title}
+                            </p>
+
+                            {(issuer || when) && (
+                              <p className={cn("mt-1 hidden line-clamp-1 text-xs sm:block", soft)}>
+                                {[issuer, when].filter(Boolean).join(" · ")}
+                              </p>
+                            )}
+                          </div>
+
+                          {url && (
+                            <ArrowUpRight
+                              size={15}
+                              className="shrink-0 text-neutral-400"
+                            />
+                          )}
+                        </>
+                      );
+
+                      return (
+                        <li key={`${title}-${index}`}>
+                          {url ? (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(
+                                card,
+                                "flex h-full items-center gap-3 p-3 sm:gap-4 sm:p-5",
+                                hoverCard,
+                                focus,
+                              )}
+                            >
+                              {content}
+                            </a>
+                          ) : (
+                            <div className={cn(card, "flex h-full items-center gap-3 p-3 sm:gap-4 sm:p-5")}>
+                              {content}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Block>
+              )}
+
+              {/* HOW I WORK */}
+              {principles.length > 0 && (
+                <Block
+                  id="approach"
+                  icon={ListChecks}
+                  title="How I work"
+                  subtitle="Habits and principles behind the code."
+                  count={principles.length}
+                >
+                  <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                    {principles.map((principle, index) => {
+                      const title =
+                        typeof principle === "object"
+                          ? principle?.title ?? principle?.name
+                          : null;
+
+                      const description =
+                        typeof principle === "string"
+                          ? principle
+                          : principle?.description ?? principle?.text;
+
+                      return (
+                        <li
+                          key={index}
+                          className={cn(card, "flex items-start gap-2.5 p-3 sm:gap-3.5 sm:p-5")}
+                        >
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10 sm:h-8 sm:w-8">
+                            <Check size={13} />
+                          </span>
+
+                          <div className="min-w-0">
+                            {title && (
+                              <h3 className="text-xs font-semibold sm:text-sm">
+                                {title}
+                              </h3>
+                            )}
+
+                            {description && (
+                              <p
+                                className={cn(
+                                  "text-xs leading-5 sm:text-sm sm:leading-7",
+                                  muted,
+                                  title ? "mt-1" : "pt-0.5",
+                                )}
+                              >
+                                {description}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Block>
+              )}
+
+              {/* PROJECTS */}
+              {featuredProjects.length > 0 && (
+                <Block
+                  id="projects"
+                  icon={Briefcase}
+                  title="Skills in action"
+                  subtitle="Where these technologies were put to work."
+                  action={
+                    <Link
+                      to="/projects"
+                      className={cn(
+                        "hidden items-center gap-1.5 text-sm font-semibold underline-offset-4 hover:underline sm:inline-flex",
+                        focus,
+                      )}
+                    >
+                      View all
+                      <ArrowRight size={14} />
+                    </Link>
+                  }
+                >
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
+                    {featuredProjects.map((project) => {
+                      const techs = projectTechs(project);
+
+                      return (
+                        <Link
+                          key={project.slug}
+                          to={`/projects/${project.slug}`}
+                          className={cn(
+                            "group flex min-w-0 items-center gap-3 p-3 sm:h-full sm:flex-col sm:items-stretch sm:justify-between sm:p-5",
+                            card,
+                            hoverCard,
+                            focus,
+                          )}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <h3 className="truncate text-sm font-semibold tracking-tight sm:text-lg">
+                                {projectTitle(project)}
+                              </h3>
+                              <ArrowUpRight
+                                size={15}
+                                className="shrink-0 text-neutral-400 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-neutral-900 dark:group-hover:text-white sm:hidden"
+                              />
+                            </div>
+
+                            {project.category && (
+                              <p className={cn("mt-1 text-[11px] sm:text-sm", soft)}>
+                                {project.category}
+                              </p>
+                            )}
+
+                            <p className={cn("mt-1 hidden text-xs sm:block", soft)}>
+                              {project.status ?? ""}
+                            </p>
+                          </div>
+
+                          <ul className="flex shrink-0 gap-1.5 sm:mt-4 sm:flex-wrap">
+                            {techs.slice(0, 3).map((name) => (
+                              <li key={name} title={name}>
+                                <TechLogo name={name} size="sm" />
+                              </li>
+                            ))}
+                          </ul>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  <Link
+                    to="/projects"
+                    className={cn(
+                      "mt-3 inline-flex items-center gap-1.5 text-xs font-semibold underline-offset-4 hover:underline sm:mt-4",
+                      focus,
+                    )}
+                  >
+                    View all projects
+                    <ArrowRight size={14} />
+                  </Link>
+                </Block>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CONTACT CTA */}
+      <section className="mx-auto max-w-7xl px-4 py-7 sm:px-8 sm:py-20 lg:px-12">
+        <div className="rounded-2xl bg-neutral-900 px-4 py-6 text-white dark:bg-white dark:text-neutral-900 sm:rounded-[2rem] sm:px-12 sm:py-14">
+          <h2 className="max-w-xl text-xl font-semibold tracking-tight sm:text-4xl">
+            Have an idea worth building?
+          </h2>
+
+          <p className="mt-2 max-w-xl text-xs leading-5 opacity-70 sm:mt-3 sm:text-sm sm:leading-7">
+            Let&apos;s talk web development, collaboration or an opportunity
+            to build something useful.
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">
+            <Link
+              to="/contact"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white px-3.5 text-xs font-semibold text-neutral-900 transition hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-700 sm:min-h-12 sm:gap-2 sm:px-6 sm:text-sm"
+            >
+              <Mail size={14} />
+              Contact
+            </Link>
+
+            <a
+              href={GITHUB_PROFILE}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/30 px-3.5 text-xs font-semibold transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:border-neutral-900/30 dark:hover:bg-neutral-900/10 sm:min-h-12 sm:gap-2 sm:px-6 sm:text-sm"
+            >
+              <Github size={14} />
+              GitHub
+            </a>
+
+            <Link
+              to="/projects"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/30 px-3.5 text-xs font-semibold transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:border-neutral-900/30 dark:hover:bg-neutral-900/10 sm:min-h-12 sm:gap-2 sm:px-6 sm:text-sm"
+            >
+              <Rocket size={14} />
+              Projects
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* SKILL DETAILS MODAL */}
       <Modal
         open={!!skillModal}
         onClose={() => setSkillModal(null)}
@@ -2038,20 +2297,24 @@ export default function Skills() {
         <SkillDetail
           data={skillModal}
           relatedProjects={
-            skillModal ? projectsForSkill(skillName(skillModal.skill)) : []
+            skillModal
+              ? projectsForSkill(skillName(skillModal.skill))
+              : []
           }
-          onOpenProject={openProjectFromSkill}
-        />
-      </Modal>
-
-      <Modal
-        open={!!projectModal}
-        onClose={() => setProjectModal(null)}
-        label="Project details"
-      >
-        <ProjectDetailModal
-          project={projectModal}
-          onClose={() => setProjectModal(null)}
+          siblings={
+            skillModal
+              ? (
+                  Array.isArray(skillModal.category?.skills)
+                    ? skillModal.category.skills
+                    : []
+                ).filter(
+                  (skill) =>
+                    skillName(skill) !== skillName(skillModal.skill),
+                )
+              : []
+          }
+          onSelect={setSkillModal}
+          onClose={() => setSkillModal(null)}
         />
       </Modal>
     </main>

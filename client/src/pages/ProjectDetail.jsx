@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import {
   AlertCircle,
@@ -9,31 +9,39 @@ import {
   ArrowUpRight,
   Binary,
   Boxes,
+  Briefcase,
   Calendar,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Clock,
   Cloud,
   Code2,
+  Copy,
   Cpu,
   Database,
+  Download,
   ExternalLink,
   FileCode,
   Film,
+  FlaskConical,
   GitBranch,
   Github,
   Globe,
   GraduationCap,
+  HelpCircle,
   Home,
   Image as ImageIcon,
   Layers,
   Lightbulb,
   Link2,
+  ListChecks,
   Mail,
   Maximize2,
   Monitor,
   Network,
+  Package,
   Play,
   Plug,
   Printer,
@@ -43,8 +51,10 @@ import {
   Share2,
   ShieldCheck,
   Sparkles,
+  Tag,
   Target,
   Terminal,
+  TrendingUp,
   User,
   Users,
   Workflow,
@@ -105,6 +115,199 @@ const norm = (n) => String(n ?? "").toLowerCase().replace(/[\s._-]/g, "");
 const techName = (t) => (typeof t === "string" ? t : t?.name ?? t?.label ?? t?.title ?? "");
 
 /* ------------------------------------------------------------------ */
+/* Data helpers                                                        */
+/* ------------------------------------------------------------------ */
+const GITHUB_PROFILE = "https://github.com/Suraj1819";
+
+const isFilled = (v) =>
+  v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && v.length === 0);
+
+const pick = (obj, ...keys) => {
+  for (const k of keys) if (isFilled(obj?.[k])) return obj[k];
+  return undefined;
+};
+
+const fmt = (v) => (Array.isArray(v) ? v.map(techName).filter(Boolean).join(", ") : v == null ? "" : String(v));
+
+const textOf = (item) =>
+  typeof item === "string" ? item : item?.text ?? item?.title ?? item?.name ?? item?.description ?? "";
+
+const asList = (v) => (Array.isArray(v) ? v : typeof v === "string" && v.trim() ? [v] : []);
+
+function toUrl(v) {
+  const raw = typeof v === "string" ? v : v?.url ?? v?.href ?? "";
+  const s = String(raw ?? "").trim();
+  if (!s) return "";
+  return /^(https?:|mailto:|tel:)/i.test(s) ? s : `https://${s}`;
+}
+
+const LINK_META = [
+  { key: "live", aliases: ["live", "demo", "website", "site", "url", "deployed", "liveUrl", "demoUrl"], icon: Globe, label: "Production", title: "Live demo", text: "Try the deployed app." },
+  { key: "github", aliases: ["github", "repo", "repository", "source", "code", "sourceCode", "githubUrl", "repoUrl"], icon: Github, label: "Source code", title: "GitHub repository", text: "Code, commits and issues." },
+  { key: "frontend", aliases: ["frontend", "client", "frontendRepo", "frontendUrl"], icon: Monitor, label: "Source code", title: "Frontend repository", text: "UI and client-side code." },
+  { key: "backend", aliases: ["backend", "server", "backendRepo", "backendUrl"], icon: Server, label: "Source code", title: "Backend repository", text: "API and server-side code." },
+  { key: "docs", aliases: ["docs", "documentation", "readme"], icon: FileCode, label: "Reference", title: "Documentation", text: "Guides and API notes." },
+  { key: "design", aliases: ["design", "figma", "designFiles"], icon: Layers, label: "Design", title: "Design files", text: "Wireframes and mockups." },
+  { key: "blog", aliases: ["blog", "caseStudy", "article", "writeup"], icon: Code2, label: "Write-up", title: "Case study blog", text: "Decisions and lessons." },
+  { key: "download", aliases: ["download", "apk", "release", "releases"], icon: Download, label: "Download", title: "Download / releases", text: "Get a build to run." },
+  { key: "package", aliases: ["npm", "package"], icon: Package, label: "Package", title: "Package page", text: "Install it from the registry." },
+];
+
+function resolveLinks(project) {
+  if (!project) return [];
+  const raw = project.links;
+  const out = [];
+  const used = new Set();
+
+  const addMeta = (meta, url) => {
+    if (!url || used.has(meta.key)) return;
+    used.add(meta.key);
+    out.push({ ...meta, url });
+  };
+
+  if (Array.isArray(raw)) {
+    raw.forEach((item) => {
+      const url = toUrl(item);
+      if (!url) return;
+      const hint = norm(item?.type ?? item?.key ?? item?.label ?? item?.title);
+      const meta = LINK_META.find((m) => m.key === hint || m.aliases.some((a) => norm(a) === hint));
+      if (meta && !used.has(meta.key)) addMeta(meta, url);
+      else out.push({ key: `extra-${out.length}`, icon: Link2, label: "Link", title: item?.label ?? item?.title ?? "Related link", text: item?.description ?? "Open in a new tab.", url });
+    });
+  }
+
+  LINK_META.forEach((meta) => {
+    if (used.has(meta.key)) return;
+    for (const a of meta.aliases) {
+      const v = (raw && !Array.isArray(raw) ? raw[a] : undefined) ?? project[a];
+      const url = toUrl(v);
+      if (url) { addMeta(meta, url); break; }
+    }
+  });
+
+  const extras = asList(project.extraLinks ?? (raw && !Array.isArray(raw) ? raw.extra : null));
+  extras.forEach((e, i) => {
+    const url = toUrl(e);
+    if (url) out.push({ key: `more-${i}`, icon: Link2, label: "Link", title: e?.label ?? e?.title ?? "Related link", text: e?.description ?? "Open in a new tab.", url });
+  });
+
+  return out;
+}
+
+function normalizeImages(...lists) {
+  const seen = new Set();
+  const out = [];
+  lists.forEach((list) => {
+    (Array.isArray(list) ? list : []).forEach((s) => {
+      const src = typeof s === "string" ? s : s?.src ?? s?.url ?? s?.image;
+      if (!src || seen.has(src)) return;
+      seen.add(src);
+      out.push({ src, caption: typeof s === "string" ? null : s?.caption ?? s?.title ?? s?.alt ?? null });
+    });
+  });
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* Auto-load gallery + video — Vite import.meta.glob (bulletproof)     */
+/* ------------------------------------------------------------------ */
+/*
+  WORKS ON ALL VITE VERSIONS (2, 3, 4, 5, 6).
+  Uses relative glob path + module.default — no query/import options.
+
+  FOLDER STRUCTURE (just drop files — any filename works):
+    src/
+    └── assets/
+        └── projects/
+            ├── voxsense/
+            │   ├── image/
+            │   │   ├── dashboard.png
+            │   │   └── hero.jpg
+            │   └── video/
+            │       └── demo.mp4
+            └── ... (one folder per project slug)
+*/
+
+// Relative path from src/pages/ → ../assets/projects/*/image/*
+const IMG_GLOB = import.meta.glob(
+  "../assets/projects/*/image/*.{png,jpg,jpeg,webp,gif,avif,svg}",
+  { eager: true }
+);
+
+const VID_GLOB = import.meta.glob(
+  "../assets/projects/*/video/*.{mp4,webm,mov,m4v,ogg}",
+  { eager: true }
+);
+
+/* Parse slug + filename from a glob path.
+   Handles both relative ("../assets/...") and absolute ("/src/assets/...") paths. */
+function parseGlobPath(path) {
+  const match = path.match(/assets\/projects\/([^/]+)\/(image|video)\/(.+)$/);
+  if (!match) return null;
+  return { slug: match[1], type: match[2], file: match[3] };
+}
+
+/* Extract URL from a Vite module — handles all Vite versions */
+function getUrlFromModule(mod) {
+  if (typeof mod === "string") return mod;
+  if (mod?.default) return mod.default;
+  if (typeof mod === "object" && mod !== null) {
+    // Some Vite versions put URL on the module directly
+    const keys = Object.keys(mod);
+    if (keys.length === 1 && typeof mod[keys[0]] === "string") return mod[keys[0]];
+  }
+  return "";
+}
+
+/* Convert "dashboard.png" into "Dashboard" */
+function captionFromFilename(file) {
+  return file
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/^\w/, (c) => c.toUpperCase());
+}
+
+/* Pre-built lookup map at module scope (build-time, zero runtime cost) */
+const imagesBySlug = {};
+const videosBySlug = {};
+
+Object.entries(IMG_GLOB).forEach(([path, mod]) => {
+  const info = parseGlobPath(path);
+  if (!info) return;
+  const url = getUrlFromModule(mod);
+  if (!url) return;
+  if (!imagesBySlug[info.slug]) imagesBySlug[info.slug] = [];
+  imagesBySlug[info.slug].push({
+    src: url,
+    caption: captionFromFilename(info.file),
+  });
+});
+
+Object.entries(VID_GLOB).forEach(([path, mod]) => {
+  const info = parseGlobPath(path);
+  if (!info) return;
+  const url = getUrlFromModule(mod);
+  if (!url) return;
+  if (!videosBySlug[info.slug]) videosBySlug[info.slug] = [];
+  videosBySlug[info.slug].push({
+    url,
+    title: captionFromFilename(info.file),
+    description: null,
+  });
+});
+
+// DEBUG: See what Vite detected at build time
+console.log("[ProjectDetail] imagesBySlug:", imagesBySlug);
+console.log("[ProjectDetail] videosBySlug:", videosBySlug);
+
+/* Hook: returns build-time glob results — zero runtime cost, zero errors */
+function useAutoProjectMedia(slug) {
+  const images = slug ? (imagesBySlug[slug] ?? []) : [];
+  const videos = slug ? (videosBySlug[slug] ?? []) : [];
+  return { images, videos, loaded: true };
+}
+
+/* ------------------------------------------------------------------ */
 /* Shared classes                                                      */
 /* ------------------------------------------------------------------ */
 const card = "rounded-2xl border border-neutral-200 bg-white dark:border-white/10 dark:bg-white/[0.04]";
@@ -112,6 +315,8 @@ const iconBox = "flex shrink-0 items-center justify-center bg-neutral-900 text-w
 const focus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 dark:focus-visible:ring-white dark:focus-visible:ring-offset-neutral-950";
 const hoverCard = "transition hover:border-neutral-900 dark:hover:border-white";
+const muted = "text-neutral-600 dark:text-neutral-400";
+const soft = "text-neutral-500 dark:text-neutral-400";
 
 /* ------------------------------------------------------------------ */
 /* Logo pieces                                                         */
@@ -204,6 +409,25 @@ function Block({ id, icon: Icon, title, count, children }) {
   );
 }
 
+function ListBlock({ id, icon, title, items, ItemIcon, cols = true }) {
+  const list = asList(items).map(textOf).filter(Boolean);
+  if (!list.length) return null;
+  return (
+    <Block id={id} icon={icon} title={title} count={list.length}>
+      <ul className={`grid gap-3 ${cols ? "sm:grid-cols-2" : ""}`}>
+        {list.map((t, i) => (
+          <li key={i} className={`${card} flex items-start gap-3.5 p-5`}>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10">
+              <ItemIcon size={15} />
+            </span>
+            <p className="pt-1 text-sm leading-7 text-neutral-700 dark:text-neutral-300">{t}</p>
+          </li>
+        ))}
+      </ul>
+    </Block>
+  );
+}
+
 function Btn({ href, to, onClick, variant = "primary", children }) {
   const base = `inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition ${focus}`;
   const styles =
@@ -233,10 +457,23 @@ function StatusBadge({ status }) {
   );
 }
 
-function normalizeImages(list) {
-  return (Array.isArray(list) ? list : [])
-    .map((s) => (typeof s === "string" ? { src: s, caption: null } : { src: s?.src ?? s?.url, caption: s?.caption ?? s?.title ?? null }))
-    .filter((s) => s.src);
+function CopyLine({ text }) {
+  const [done, setDone] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setDone(true);
+      setTimeout(() => setDone(false), 1500);
+    } catch { /* clipboard blocked */ }
+  };
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl bg-neutral-900 px-4 py-3 font-mono text-xs text-neutral-100 dark:bg-black/50">
+      <code className="min-w-0 overflow-x-auto whitespace-pre">{text}</code>
+      <button type="button" onClick={copy} aria-label="Copy command" className="shrink-0 rounded-md p-1.5 text-neutral-300 transition hover:bg-white/10 hover:text-white">
+        {done ? <Check size={14} /> : <Copy size={14} />}
+      </button>
+    </div>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -326,6 +563,7 @@ function Lightbox({ images, index, onClose, onNav }) {
   }, [index, total, onClose, onNav]);
 
   const cur = images[index];
+  if (!cur) return null;
   const btn = "flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white transition hover:bg-white/20";
 
   return (
@@ -402,6 +640,11 @@ function PreviewShowcase({ slides, title, tagline }) {
   const [paused, setPaused] = useState(false);
   const [open, setOpen] = useState(false);
   const total = slides.length;
+  const closeLightbox = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (index >= total && total > 0) setIndex(0);
+  }, [index, total]);
 
   useEffect(() => {
     if (paused || open || total <= 1) return undefined;
@@ -415,12 +658,12 @@ function PreviewShowcase({ slides, title, tagline }) {
       <div className="flex aspect-[16/8] flex-col items-center justify-center rounded-3xl border border-dashed border-neutral-300 bg-white px-6 text-center dark:border-white/20 dark:bg-white/[0.03]">
         <span className={`mb-4 h-14 w-14 rounded-2xl ${iconBox}`}><Layers size={26} /></span>
         <p className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</p>
-        {tagline && <p className="mt-2 max-w-md text-sm text-neutral-500 dark:text-neutral-400">{tagline}</p>}
+        {tagline && <p className={`mt-2 max-w-md text-sm ${soft}`}>{tagline}</p>}
       </div>
     );
   }
 
-  const cur = slides[index];
+  const cur = slides[Math.min(index, total - 1)];
   const arrow = "flex h-10 w-10 items-center justify-center rounded-full border border-neutral-300 transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/10";
 
   return (
@@ -450,7 +693,7 @@ function PreviewShowcase({ slides, title, tagline }) {
       <div className="mt-4 flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{cur.caption || `${title} preview`}</p>
-          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+          <p className={`mt-0.5 text-xs ${soft}`}>
             {index + 1} of {total}
           </p>
         </div>
@@ -482,36 +725,83 @@ function PreviewShowcase({ slides, title, tagline }) {
         </ul>
       )}
 
-      {open && <Lightbox images={slides} index={index} onClose={() => setOpen(false)} onNav={setIndex} />}
+      {open && <Lightbox images={slides} index={index} onClose={closeLightbox} onNav={setIndex} />}
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Gallery (masonry: every photo keeps its real shape)                 */
+/* Gallery: uniform tiles, full image visible (never cropped),         */
+/* featured first tile, broken images skipped, show more / less        */
 /* ------------------------------------------------------------------ */
-function Gallery({ images }) {
+const GALLERY_INITIAL = 6;
+
+function Gallery({ images, title }) {
   const [open, setOpen] = useState(null);
+  const [broken, setBroken] = useState(() => new Set());
+  const [expanded, setExpanded] = useState(false);
+  const closeLightbox = useCallback(() => setOpen(null), []);
+
+  const visible = useMemo(() => images.filter((im) => !broken.has(im.src)), [images, broken]);
+  const shown = expanded ? visible : visible.slice(0, GALLERY_INITIAL);
+  const hidden = visible.length - shown.length;
+
+  if (!visible.length) {
+    return (
+      <div className={`${card} flex flex-col items-center gap-3 border-dashed p-10 text-center`}>
+        <ImageIcon size={26} className="text-neutral-400" />
+        <p className={`text-sm ${muted}`}>Screenshots for {title} will appear here soon.</p>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-        {images.map((im, i) => (
-          <button
-            key={`${im.src}-${i}`}
-            type="button"
-            onClick={() => setOpen(i)}
-            aria-label={im.caption ? `View: ${im.caption}` : `View image ${i + 1}`}
-            className={`group relative mb-4 block w-full break-inside-avoid overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 transition hover:border-neutral-900 dark:border-white/10 dark:bg-white/5 dark:hover:border-white ${focus}`}
-          >
-            <img src={im.src} alt={im.caption || `Screenshot ${i + 1}`} loading="lazy" className="block h-auto w-full" />
-            <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/70 to-transparent p-4 text-left text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">
-              <span>{im.caption}</span>
-              <Maximize2 size={15} className="shrink-0" />
-            </span>
-          </button>
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {shown.map((im, i) => (
+          <li key={`${im.src}-${i}`} className={i === 0 && visible.length > 2 ? "sm:col-span-2 lg:col-span-2 lg:row-span-1" : ""}>
+            <button
+              type="button"
+              onClick={() => setOpen(i)}
+              aria-label={im.caption ? `View: ${im.caption}` : `View image ${i + 1}`}
+              className={`group relative block aspect-[16/10] w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 transition hover:border-neutral-900 dark:border-white/10 dark:bg-white/5 dark:hover:border-white ${focus}`}
+            >
+              <img
+                src={im.src}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                className="absolute inset-0 h-full w-full scale-125 object-cover opacity-30 blur-2xl"
+              />
+              <img
+                src={im.src}
+                alt={im.caption || `${title} screenshot ${i + 1}`}
+                loading="lazy"
+                onError={() => setBroken((prev) => new Set(prev).add(im.src))}
+                className="relative h-full w-full object-contain p-2 transition duration-300 group-hover:scale-[1.02]"
+              />
+              <span className="absolute left-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/75 to-transparent p-4 text-left text-xs font-medium text-white opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+                <span className="line-clamp-2">{im.caption || "View full screen"}</span>
+                <Maximize2 size={15} className="shrink-0" />
+              </span>
+            </button>
+          </li>
         ))}
-      </div>
-      {open !== null && <Lightbox images={images} index={open} onClose={() => setOpen(null)} onNav={setOpen} />}
+      </ul>
+
+      {visible.length > GALLERY_INITIAL && (
+        <div className="mt-6 flex justify-center print:hidden">
+          <Btn variant="secondary" onClick={() => setExpanded((v) => !v)}>
+            {expanded ? "Show less" : `Show ${hidden} more`}
+            <ChevronDown size={16} className={`transition ${expanded ? "rotate-180" : ""}`} />
+          </Btn>
+        </div>
+      )}
+
+      {open !== null && <Lightbox images={visible} index={open} onClose={closeLightbox} onNav={setOpen} />}
     </>
   );
 }
@@ -564,7 +854,164 @@ function VideoEmbed({ video }) {
               <Film size={15} className="text-neutral-500" /> {title}
             </h3>
           )}
-          {description && <p className="mt-2 text-sm leading-7 text-neutral-600 dark:text-neutral-400">{description}</p>}
+          {description && <p className={`mt-2 text-sm leading-7 ${muted}`}>{description}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Empty video placeholder — shown when project has no video */
+function EmptyVideo({ title }) {
+  return (
+    <div className={`${card} flex flex-col items-center justify-center gap-3 border-dashed p-10 text-center`}>
+      <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${iconBox}`}>
+        <Film size={26} />
+      </span>
+      <p className="text-sm font-semibold">{title} demo will appear here soon.</p>
+      <p className={`text-xs ${soft}`}>A short walkthrough is being recorded.</p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* FAQ accordion                                                       */
+/* ------------------------------------------------------------------ */
+function Faq({ items }) {
+  const [openIdx, setOpenIdx] = useState(0);
+  return (
+    <ul className="space-y-3">
+      {items.map((f, i) => {
+        const isOpen = openIdx === i;
+        return (
+          <li key={i} className={`${card} overflow-hidden`}>
+            <button
+              type="button"
+              aria-expanded={isOpen}
+              onClick={() => setOpenIdx(isOpen ? -1 : i)}
+              className={`flex w-full items-center justify-between gap-4 p-5 text-left font-semibold ${focus}`}
+            >
+              <span>{f.question}</span>
+              <ChevronDown size={18} className={`shrink-0 transition ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+            {isOpen && <p className={`border-t border-neutral-200 px-5 pb-5 pt-4 text-sm leading-7 dark:border-white/10 ${muted}`}>{f.answer}</p>}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Project brief (detailed) — COMPACT, fits on screen                  */
+/* ------------------------------------------------------------------ */
+function ProjectBrief({ project, links, flatTech }) {
+  const start = pick(project, "startDate", "started");
+  const end = pick(project, "endDate", "completed");
+  const timeline = start || end ? [start, end ?? "Present"].filter(Boolean).join(" – ") : undefined;
+  const responsibilities = asList(pick(project, "responsibilities", "contributions")).map(textOf).filter(Boolean);
+  const tags = asList(pick(project, "tags", "keywords")).map(textOf).filter(Boolean);
+  const progress = Number(project.progress);
+
+  const rows = [
+    { icon: Calendar, label: "Year", value: fmt(project.year) },
+    { icon: Clock, label: "Duration", value: fmt(project.duration) },
+    { icon: Calendar, label: "Timeline", value: timeline },
+    { icon: User, label: "Role", value: fmt(project.role) },
+    { icon: Users, label: "Team", value: fmt(pick(project, "team", "teamSize")) },
+    { icon: Layers, label: "Category", value: fmt(project.category) },
+    { icon: Briefcase, label: "Project type", value: fmt(pick(project, "type", "projectType")) },
+    { icon: Monitor, label: "Platform", value: fmt(pick(project, "platform", "platforms")) },
+    { icon: Target, label: "Audience", value: fmt(pick(project, "audience", "targetUsers")) },
+    { icon: Briefcase, label: "Client", value: fmt(project.client) },
+    { icon: Cloud, label: "Hosting", value: fmt(pick(project, "hosting", "deployment")) },
+    { icon: GitBranch, label: "Version", value: fmt(project.version) },
+    { icon: ShieldCheck, label: "License", value: fmt(project.license) },
+    { icon: Clock, label: "Last updated", value: fmt(pick(project, "lastUpdated", "updatedAt")) },
+    { icon: Wrench, label: "Technologies", value: flatTech.length ? `${flatTech.length} used` : "" },
+    { icon: CheckCircle2, label: "Status", value: fmt(project.status) },
+  ].filter((r) => r.value);
+
+  const quick = links.slice(0, 4);
+
+  return (
+    <div className={`${card} h-fit p-4 sm:p-5`}>
+      {/* Header — more compact */}
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className={`h-9 w-9 rounded-lg ${iconBox}`}><FileCode size={17} /></span>
+        <div>
+          <h2 className="text-sm font-semibold leading-tight">Project brief</h2>
+          <p className={`text-[11px] ${soft}`}>At a glance</p>
+        </div>
+      </div>
+
+      {/* Detail rows — 2-col grid, compact padding/text (was p-3.5, now p-2.5) */}
+      {rows.length > 0 && (
+        <dl className="grid grid-cols-2 gap-2">
+          {rows.map((b) => (
+            <div key={b.label} className="rounded-lg bg-neutral-50 p-2.5 dark:bg-white/5">
+              <dt className={`flex items-center gap-1 text-[11px] ${soft}`}>
+                <b.icon size={12} /> {b.label}
+              </dt>
+              <dd className="mt-1 break-words text-xs font-semibold sm:text-sm">{b.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {/* Progress — compact */}
+      {Number.isFinite(progress) && progress > 0 && (
+        <div className="mt-4">
+          <div className="mb-1 flex items-center justify-between text-xs">
+            <span className={soft}>Completion</span>
+            <span className="font-semibold">{Math.min(100, progress)}%</span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100 dark:bg-white/10" role="progressbar" aria-valuenow={Math.min(100, progress)} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full rounded-full bg-neutral-900 dark:bg-white" style={{ width: `${Math.min(100, progress)}%` }} />
+          </div>
+        </div>
+      )}
+
+      {/* Responsibilities — compact */}
+      {responsibilities.length > 0 && (
+        <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-white/10">
+          <p className="mb-2 flex items-center gap-2 text-xs font-semibold"><ListChecks size={14} /> My responsibilities</p>
+          <ul className="space-y-1.5">
+            {responsibilities.slice(0, 5).map((r, i) => (
+              <li key={i} className={`flex items-start gap-2 text-xs leading-5 ${muted}`}>
+                <CheckCircle2 size={12} className="mt-0.5 shrink-0 text-neutral-900 dark:text-white" /> {r}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Tags — compact */}
+      {tags.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {tags.map((t) => (
+            <span key={t} className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-2 py-0.5 text-[11px] text-neutral-600 dark:border-white/10 dark:text-neutral-400">
+              <Tag size={10} /> {t}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Quick links — compact */}
+      {quick.length > 0 && (
+        <div className="mt-4 grid gap-1.5 border-t border-neutral-200 pt-4 dark:border-white/10 print:hidden">
+          {quick.map((l) => (
+            <a
+              key={l.key}
+              href={l.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center justify-between gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-xs font-medium transition hover:border-neutral-900 dark:border-white/10 dark:hover:border-white ${focus}`}
+            >
+              <span className="inline-flex items-center gap-1.5"><l.icon size={13} /> {l.title}</span>
+              <ArrowUpRight size={13} className="text-neutral-400" />
+            </a>
+          ))}
         </div>
       )}
     </div>
@@ -572,16 +1019,8 @@ function VideoEmbed({ video }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Link cards + small cards                                            */
+/* Mini project card                                                   */
 /* ------------------------------------------------------------------ */
-const LINK_META = [
-  { key: "github", icon: Github, label: "Source code", title: "GitHub repository", text: "Code, commits and issues." },
-  { key: "live", icon: Globe, label: "Production", title: "Live demo", text: "Try the deployed app." },
-  { key: "docs", icon: FileCode, label: "Reference", title: "Documentation", text: "Guides and API notes." },
-  { key: "design", icon: Layers, label: "Design", title: "Design files", text: "Wireframes and mockups." },
-  { key: "blog", icon: Code2, label: "Write-up", title: "Case study blog", text: "Decisions and lessons." },
-];
-
 const COMPONENT_ICONS = [Server, Database, Network, Code2, Cpu, Globe, ShieldCheck, Terminal];
 
 function MiniProject({ p }) {
@@ -594,7 +1033,7 @@ function MiniProject({ p }) {
           <ArrowUpRight size={18} className="text-neutral-400 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-neutral-900 dark:group-hover:text-white" />
         </div>
         <h3 className="mt-4 text-lg font-semibold tracking-tight">{p.title}</h3>
-        {p.category && <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{p.category}</p>}
+        {p.category && <p className={`mt-1 text-sm ${soft}`}>{p.category}</p>}
       </div>
       <ul className="mt-5 flex gap-1.5">
         {techs.map(techName).filter(Boolean).slice(0, 5).map((n) => (
@@ -617,35 +1056,133 @@ export default function ProjectDetail() {
   const techCategories = project?.techCategories ?? null;
   const flatTech = useMemo(() => {
     if (!project) return [];
-    const base = project.technologies ?? (techCategories ? techCategories.flatMap((c) => c.items ?? []) : []);
+    const base = project.technologies ?? project.techStack ?? (techCategories ? techCategories.flatMap((c) => c.items ?? []) : []);
     return base.map(techName).filter(Boolean);
   }, [project, techCategories]);
 
-  const slides = useMemo(
-    () => normalizeImages(project?.preview?.length ? project.preview : project?.gallery),
-    [project]
+  const links = useMemo(() => resolveLinks(project), [project]);
+  const liveLink = links.find((l) => l.key === "live");
+  const repoLink = links.find((l) => l.key === "github") ?? links.find((l) => l.key === "frontend");
+
+  /* Links section always has something: falls back to the author's GitHub */
+  const displayLinks = useMemo(
+    () =>
+      links.length
+        ? links
+        : [{ key: "profile", icon: Github, label: "Profile", title: "GitHub profile", text: "Browse all my repositories.", url: GITHUB_PROFILE }],
+    [links]
   );
-  const gallery = useMemo(() => normalizeImages(project?.gallery), [project]);
+
+  const previewList = project?.preview;
+  const galleryList = project?.gallery ?? project?.screenshots ?? project?.images;
+
+  // Auto-load from /public/project/[slug]/image and /public/project/[slug]/video
+  const autoMedia = useAutoProjectMedia(slug);
+
+  // Merge: project data first, then auto-loaded folder assets (deduplicated)
+  const slides = useMemo(
+    () => normalizeImages(previewList, galleryList, autoMedia.images),
+    [previewList, galleryList, autoMedia.images]
+  );
+
+  const gallery = useMemo(() => {
+    const g = normalizeImages(galleryList);
+    const merged = g.length ? g : normalizeImages(previewList);
+    // Append any auto-loaded images not already present
+    const seen = new Set(merged.map((m) => m.src));
+    autoMedia.images.forEach((im) => {
+      if (!seen.has(im.src)) {
+        merged.push(im);
+        seen.add(im.src);
+      }
+    });
+    return merged;
+  }, [galleryList, previewList, autoMedia.images]);
+
+  // Video: use project.video first, else first auto-loaded video file
+  const video = useMemo(() => {
+    if (project?.video) return project.video;
+    if (autoMedia.videos.length > 0) {
+      return { url: autoMedia.videos[0].url, title: `${project.title} — demo`, description: null };
+    }
+    return null;
+  }, [project, autoMedia.videos]);
+
+  // List of all videos: project.video + project.videos array + auto-loaded folder videos
+  const videoList = useMemo(() => {
+    const list = [];
+    // 1. Single video field (legacy)
+    if (project?.video) {
+      const url = typeof project.video === "string" ? project.video : project.video?.url;
+      if (url) list.push(project.video);
+    }
+    // 2. Videos array (new — supports multiple videos per project)
+    if (Array.isArray(project?.videos)) {
+      project.videos.forEach((v) => {
+        const url = typeof v === "string" ? v : v?.url;
+        if (!url) return;
+        const exists = list.some((item) => (typeof item === "string" ? item : item?.url) === url);
+        if (!exists) list.push(v);
+      });
+    }
+    // 3. Auto-loaded videos from src/assets folder
+    autoMedia.videos.forEach((v) => {
+      const url = typeof v === "string" ? v : v.url ?? v.src;
+      if (!url) return;
+      const exists = list.some((item) => (typeof item === "string" ? item : item?.url) === url);
+      if (!exists) list.push({ url, title: `${project.title} — demo` });
+    });
+    return list;
+  }, [project, autoMedia.videos]);
+
+  const highlights = useMemo(() => asList(pick(project ?? {}, "highlights", "keyPoints")).map(textOf).filter(Boolean), [project]);
+  const responsibilities = useMemo(() => asList(pick(project ?? {}, "responsibilities", "contributions")).map(textOf).filter(Boolean), [project]);
+  const results = useMemo(() => asList(pick(project ?? {}, "results", "outcomes", "impact")).map(textOf).filter(Boolean), [project]);
+  const testing = useMemo(() => asList(pick(project ?? {}, "testing", "quality")).map(textOf).filter(Boolean), [project]);
+  const timeline = useMemo(() => asList(project?.timeline ?? project?.milestones).filter((t) => t && (typeof t === "string" || t.title || t.description || t.phase)), [project]);
+  const faq = useMemo(() => asList(project?.faq).filter((f) => f?.question && f?.answer), [project]);
+
+  const setup = useMemo(() => {
+    const s = project?.setup ?? project?.installation;
+    if (!s) return null;
+    if (Array.isArray(s)) return { steps: s.map(textOf).filter(Boolean) };
+    if (typeof s === "string") return { steps: [s] };
+    return {
+      requirements: asList(s.requirements ?? s.prerequisites).map(textOf).filter(Boolean),
+      steps: asList(s.steps ?? s.commands).map(textOf).filter(Boolean),
+      env: asList(s.env ?? s.environment).map(textOf).filter(Boolean),
+    };
+  }, [project]);
+  const hasSetup = !!setup && (setup.steps?.length || setup.requirements?.length || setup.env?.length);
+
+  const hasGallery = gallery.length > 0;
+  const hasVideo = videoList.length > 0;
 
   const sections = useMemo(() => {
     if (!project) return [];
-    const hasLink = LINK_META.some((l) => project.links?.[l.key]);
     return [
       { id: "overview", label: "Overview", icon: Lightbulb, show: true },
       { id: "problem", label: "Problem", icon: AlertCircle, show: !!project.problem },
       { id: "goals", label: "Goals", icon: Target, show: project.goals?.length > 0 },
+      { id: "role", label: "My role", icon: Briefcase, show: responsibilities.length > 0 },
       { id: "architecture", label: "Architecture", icon: Layers, show: !!project.architecture },
       { id: "features", label: "Features", icon: CheckCircle2, show: project.features?.length > 0 },
-      { id: "gallery", label: "Gallery", icon: ImageIcon, show: gallery.length > 0 },
-      { id: "video", label: "Video demo", icon: Play, show: !!project.video },
+      // Gallery + Video — ALWAYS shown so every project has them in sidebar
+      { id: "gallery", label: "Gallery", icon: ImageIcon, show: true },
+      { id: "video", label: "Video demo", icon: Play, show: true },
       { id: "tech", label: "Tech stack", icon: Wrench, show: flatTech.length > 0 },
+      { id: "timeline", label: "Timeline", icon: Calendar, show: timeline.length > 0 },
       { id: "challenges", label: "Challenges", icon: AlertTriangle, show: project.challenges?.length > 0 },
+      { id: "results", label: "Results", icon: TrendingUp, show: results.length > 0 },
+      { id: "testing", label: "Testing", icon: FlaskConical, show: testing.length > 0 },
       { id: "learnings", label: "Learnings", icon: GraduationCap, show: project.learnings?.length > 0 },
       { id: "limitations", label: "Limitations", icon: AlertCircle, show: project.limitations?.length > 0 },
       { id: "future", label: "Roadmap", icon: Rocket, show: project.future?.length > 0 },
-      { id: "links", label: "Links", icon: Link2, show: hasLink },
+      { id: "setup", label: "Run locally", icon: Terminal, show: !!hasSetup },
+      { id: "faq", label: "FAQ", icon: HelpCircle, show: faq.length > 0 },
+      { id: "links", label: "Links", icon: Link2, show: true },
     ].filter((s) => s.show);
-  }, [project, gallery.length, flatTech.length]);
+  }, [project, flatTech.length, responsibilities.length, timeline.length, results.length, testing.length, hasSetup, faq.length]);
 
   const active = useScrollSpy(sections.map((s) => s.id));
 
@@ -665,27 +1202,20 @@ export default function ProjectDetail() {
     }
   };
 
-  const brief = [
-    { icon: Calendar, label: "Year", value: project.year },
-    { icon: Clock, label: "Duration", value: project.duration },
-    { icon: User, label: "Role", value: project.role },
-    { icon: Users, label: "Team", value: project.team },
-    { icon: Layers, label: "Category", value: project.category },
-    { icon: CheckCircle2, label: "Status", value: project.status },
-  ].filter((b) => b.value);
-
   const counts = [
     { icon: CheckCircle2, value: project.features?.length, label: "Features" },
     { icon: Wrench, value: flatTech.length, label: "Technologies" },
     { icon: Target, value: project.goals?.length, label: "Goals" },
     { icon: AlertTriangle, value: project.challenges?.length, label: "Challenges" },
+    { icon: ImageIcon, value: gallery.length, label: "Screenshots" },
+    { icon: Rocket, value: project.future?.length, label: "Roadmap items" },
   ].filter((c) => c.value > 0);
 
   const flowSteps = project.architecture?.dataFlow
     ? String(project.architecture.dataFlow).split(/\s*(?:→|->|=>)\s*/).filter(Boolean)
     : [];
   const others = (Array.isArray(projects) ? projects : []).filter((p) => p?.slug && p.slug !== slug).slice(0, 3);
-  const actionLinks = LINK_META.filter((l) => project.links?.[l.key]);
+  const audience = fmt(pick(project, "audience", "targetUsers"));
 
   return (
     <main className="min-h-screen overflow-x-clip bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -695,7 +1225,7 @@ export default function ProjectDetail() {
       {/* ============ HERO ============ */}
       <section className="border-b border-neutral-200 dark:border-white/10">
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
-          <nav aria-label="Breadcrumb" className="mb-8 flex flex-wrap items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 print:hidden">
+          <nav aria-label="Breadcrumb" className={`mb-8 flex flex-wrap items-center gap-1.5 text-sm ${soft} print:hidden`}>
             <Link to="/" className="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"><Home size={14} /> Home</Link>
             <ChevronRight size={14} className="shrink-0" />
             <Link to="/projects" className="hover:text-neutral-900 dark:hover:text-white">Projects</Link>
@@ -703,7 +1233,8 @@ export default function ProjectDetail() {
             <span className="max-w-[12rem] truncate text-neutral-900 dark:text-white sm:max-w-none">{project.title}</span>
           </nav>
 
-          <div className="grid gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:gap-14">
+          {/* Wider card: grid changed from [1.15fr_0.85fr] to [1fr_1fr] (50/50) */}
+          <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-12">
             <div>
               <div className="mb-5 flex flex-wrap items-center gap-2">
                 {project.category && (
@@ -711,11 +1242,22 @@ export default function ProjectDetail() {
                     <Layers size={12} /> {project.category}
                   </span>
                 )}
+                {project.year && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium dark:border-white/10 dark:bg-white/5">
+                    <Calendar size={12} /> {project.year}
+                  </span>
+                )}
                 <StatusBadge status={project.status} />
               </div>
 
               <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">{project.title}</h1>
-              {project.tagline && <p className="mt-5 max-w-xl text-lg leading-8 text-neutral-600 dark:text-neutral-400">{project.tagline}</p>}
+              {project.tagline && <p className={`mt-5 max-w-xl text-lg leading-8 ${muted}`}>{project.tagline}</p>}
+
+              {audience && (
+                <p className={`mt-4 flex max-w-xl items-start gap-2 text-sm ${soft}`}>
+                  <Users size={15} className="mt-0.5 shrink-0" /> Built for: {audience}
+                </p>
+              )}
 
               {flatTech.length > 0 && (
                 <div className="mt-7">
@@ -724,8 +1266,13 @@ export default function ProjectDetail() {
               )}
 
               <div className="mt-8 flex flex-wrap gap-3 print:hidden">
-                {project.links?.live && <Btn href={project.links.live}><ExternalLink size={16} /> Live demo</Btn>}
-                {project.links?.github && <Btn href={project.links.github} variant="secondary"><Github size={16} /> Repository</Btn>}
+                {liveLink && <Btn href={liveLink.url}><ExternalLink size={16} /> Live demo</Btn>}
+                {repoLink && <Btn href={repoLink.url} variant={liveLink ? "secondary" : "primary"}><Github size={16} /> Repository</Btn>}
+                {links.length > 2 && (
+                  <a href="#links" className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-neutral-300 px-5 text-sm font-semibold transition hover:bg-neutral-100 dark:border-white/15 dark:hover:bg-white/5 ${focus}`}>
+                    <Link2 size={16} /> All links
+                  </a>
+                )}
                 <Btn onClick={handleShare} variant="secondary">
                   {copied ? <Check size={16} /> : <Share2 size={16} />} {copied ? "Link copied" : "Share"}
                 </Btn>
@@ -733,25 +1280,7 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Brief */}
-            <div className={`${card} h-fit p-6 sm:p-7`}>
-              <div className="mb-5 flex items-center gap-3">
-                <span className={`h-10 w-10 rounded-xl ${iconBox}`}><FileCode size={19} /></span>
-                <h2 className="font-semibold">Project brief</h2>
-              </div>
-              {brief.length > 0 && (
-                <dl className="grid grid-cols-2 gap-3">
-                  {brief.map((b) => (
-                    <div key={b.label} className="rounded-xl bg-neutral-50 p-3.5 dark:bg-white/5">
-                      <dt className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                        <b.icon size={13} /> {b.label}
-                      </dt>
-                      <dd className="mt-1.5 text-sm font-semibold">{b.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-            </div>
+            <ProjectBrief project={project} links={links} flatTech={flatTech} />
           </div>
         </div>
       </section>
@@ -772,7 +1301,7 @@ export default function ProjectDetail() {
                 <div key={m.label} className={`${card} p-5 sm:p-6`}>
                   <dd className="text-3xl font-semibold tracking-tight">{m.value}</dd>
                   <dt className="mt-2 text-sm font-medium">{m.label}</dt>
-                  {m.description && <p className="mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-400">{m.description}</p>}
+                  {m.description && <p className={`mt-1 text-xs leading-5 ${soft}`}>{m.description}</p>}
                 </div>
               ))}
             </dl>
@@ -827,25 +1356,23 @@ export default function ProjectDetail() {
                   </ul>
                 </nav>
 
-                {actionLinks.length > 0 && (
-                  <div className={`${card} p-4`}>
-                    <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Sparkles size={14} /> Quick links</p>
-                    <ul className="space-y-2 text-sm">
-                      {actionLinks.slice(0, 3).map((l) => (
-                        <li key={l.key}>
-                          <a href={project.links[l.key]} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">
-                            <l.icon size={14} /> {l.title} <ExternalLink size={11} />
-                          </a>
-                        </li>
-                      ))}
-                      <li>
-                        <Link to="/projects" className="inline-flex items-center gap-2 text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">
-                          <ArrowLeft size={14} /> All projects
-                        </Link>
+                <div className={`${card} p-4`}>
+                  <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Sparkles size={14} /> Quick links</p>
+                  <ul className="space-y-2 text-sm">
+                    {displayLinks.slice(0, 4).map((l) => (
+                      <li key={l.key}>
+                        <a href={l.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">
+                          <l.icon size={14} /> {l.title} <ExternalLink size={11} />
+                        </a>
                       </li>
-                    </ul>
-                  </div>
-                )}
+                    ))}
+                    <li>
+                      <Link to="/projects" className="inline-flex items-center gap-2 text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">
+                        <ArrowLeft size={14} /> All projects
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </aside>
 
@@ -853,14 +1380,25 @@ export default function ProjectDetail() {
             <div className="min-w-0 max-w-3xl space-y-20">
               {/* OVERVIEW */}
               <Block id="overview" icon={Lightbulb} title="Overview">
-                <p className="text-base leading-8 text-neutral-600 dark:text-neutral-400">{project.description}</p>
+                <p className={`text-base leading-8 ${muted}`}>{project.description}</p>
+
+                {highlights.length > 0 && (
+                  <ul className="mt-6 space-y-2.5">
+                    {highlights.map((h, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm leading-7 text-neutral-700 dark:text-neutral-300">
+                        <Sparkles size={15} className="mt-1.5 shrink-0" /> {h}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
                 {counts.length > 0 && (
-                  <dl className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <dl className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {counts.map((c) => (
                       <div key={c.label} className={`${card} p-4`}>
-                        <c.icon size={18} className="text-neutral-500 dark:text-neutral-400" />
+                        <c.icon size={18} className={soft} />
                         <dd className="mt-3 text-2xl font-semibold leading-none">{c.value}</dd>
-                        <dt className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">{c.label}</dt>
+                        <dt className={`mt-1.5 text-xs ${soft}`}>{c.label}</dt>
                       </div>
                     ))}
                   </dl>
@@ -871,26 +1409,16 @@ export default function ProjectDetail() {
               {project.problem && (
                 <Block id="problem" icon={AlertCircle} title="Problem">
                   <div className={`${card} border-l-4 !border-l-neutral-900 p-6 dark:!border-l-white sm:p-8`}>
-                    <p className="leading-8 text-neutral-600 dark:text-neutral-400">{project.problem}</p>
+                    <p className={`leading-8 ${muted}`}>{project.problem}</p>
                   </div>
                 </Block>
               )}
 
               {/* GOALS */}
-              {project.goals?.length > 0 && (
-                <Block id="goals" icon={Target} title="Goals" count={project.goals.length}>
-                  <ul className="grid gap-3 sm:grid-cols-2">
-                    {project.goals.map((g, i) => (
-                      <li key={i} className={`${card} flex items-start gap-3.5 p-5`}>
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10">
-                          <Target size={15} />
-                        </span>
-                        <p className="pt-1 text-sm leading-7 text-neutral-700 dark:text-neutral-300">{typeof g === "string" ? g : g?.text ?? g?.title}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </Block>
-              )}
+              <ListBlock id="goals" icon={Target} title="Goals" items={project.goals} ItemIcon={Target} />
+
+              {/* ROLE */}
+              <ListBlock id="role" icon={Briefcase} title="My role & contributions" items={responsibilities} ItemIcon={ListChecks} />
 
               {/* ARCHITECTURE */}
               {project.architecture && (
@@ -899,7 +1427,7 @@ export default function ProjectDetail() {
                     {project.architecture.summary && (
                       <div className={`${card} p-6 sm:p-7`}>
                         <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Workflow size={16} /> Summary</p>
-                        <p className="leading-8 text-neutral-600 dark:text-neutral-400">{project.architecture.summary}</p>
+                        <p className={`leading-8 ${muted}`}>{project.architecture.summary}</p>
                       </div>
                     )}
 
@@ -910,12 +1438,12 @@ export default function ProjectDetail() {
                           const label = typeof c === "string" ? c : c?.name ?? c?.title ?? `Component ${i + 1}`;
                           const desc = typeof c === "object" ? c?.description : null;
                           return (
-                            <li key={label} className={`${card} p-5`}>
+                            <li key={`${label}-${i}`} className={`${card} p-5`}>
                               <div className="flex items-center gap-3">
                                 <span className={`h-10 w-10 rounded-xl ${iconBox}`}><Ic size={18} /></span>
                                 <p className="font-semibold">{label}</p>
                               </div>
-                              {desc && <p className="mt-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400">{desc}</p>}
+                              {desc && <p className={`mt-3 text-sm leading-6 ${soft}`}>{desc}</p>}
                             </li>
                           );
                         })}
@@ -935,7 +1463,7 @@ export default function ProjectDetail() {
                             ))}
                           </ol>
                         ) : (
-                          <p className="leading-7 text-neutral-600 dark:text-neutral-400">{project.architecture.dataFlow}</p>
+                          <p className={`leading-7 ${muted}`}>{project.architecture.dataFlow}</p>
                         )}
                       </div>
                     )}
@@ -948,17 +1476,17 @@ export default function ProjectDetail() {
                 <Block id="features" icon={CheckCircle2} title="Features" count={project.features.length}>
                   <ul className="grid gap-3 sm:grid-cols-2">
                     {project.features.map((f, i) => {
-                      const name = typeof f === "string" ? f : f?.name ?? `Feature ${i + 1}`;
+                      const name = typeof f === "string" ? f : f?.name ?? f?.title ?? `Feature ${i + 1}`;
                       const desc = typeof f === "object" ? f?.description : null;
                       const status = typeof f === "object" ? f?.status : null;
                       return (
-                        <li key={name} className={`${card} flex h-full flex-col p-5 sm:p-6`}>
+                        <li key={`${name}-${i}`} className={`${card} flex h-full flex-col p-5 sm:p-6`}>
                           <div className="mb-4 flex items-start justify-between gap-3">
                             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10"><CheckCircle2 size={17} /></span>
                             <StatusBadge status={status} />
                           </div>
                           <h3 className="font-semibold">{name}</h3>
-                          {desc && <p className="mt-2 text-sm leading-7 text-neutral-600 dark:text-neutral-400">{desc}</p>}
+                          {desc && <p className={`mt-2 text-sm leading-7 ${muted}`}>{desc}</p>}
                         </li>
                       );
                     })}
@@ -966,19 +1494,30 @@ export default function ProjectDetail() {
                 </Block>
               )}
 
-              {/* GALLERY */}
-              {gallery.length > 0 && (
-                <Block id="gallery" icon={ImageIcon} title="Gallery" count={gallery.length}>
-                  <Gallery images={gallery} />
-                </Block>
-              )}
+              {/* GALLERY — always shown, empty placeholder if no images */}
+              <Block id="gallery" icon={ImageIcon} title="Gallery" count={hasGallery ? gallery.length : 0}>
+                {hasGallery ? (
+                  <Gallery images={gallery} title={project.title} />
+                ) : (
+                  <div className={`${card} flex flex-col items-center gap-3 border-dashed p-10 text-center`}>
+                    <ImageIcon size={26} className="text-neutral-400" />
+                    <p className={`text-sm ${muted}`}>Screenshots for {project.title} will appear here soon.</p>
+                  </div>
+                )}
+              </Block>
 
-              {/* VIDEO */}
-              {project.video && (
-                <Block id="video" icon={Play} title="Video demo">
-                  <VideoEmbed video={project.video} />
-                </Block>
-              )}
+              {/* VIDEO — always shown, empty placeholder if no video */}
+              <Block id="video" icon={Play} title="Video demo" count={videoList.length > 1 ? videoList.length : null}>
+                {hasVideo ? (
+                  <div className="space-y-4">
+                    {videoList.map((v, i) => (
+                      <VideoEmbed key={i} video={v} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyVideo title={project.title} />
+                )}
+              </Block>
 
               {/* TECH */}
               {flatTech.length > 0 && (
@@ -989,12 +1528,12 @@ export default function ProjectDetail() {
                         const icons = [Monitor, Server, Database, Network, Cpu, Wrench, Cloud, ShieldCheck];
                         const CatIcon = icons[i % icons.length];
                         return (
-                          <div key={cat.category} className={`${card} p-5 sm:p-6`}>
+                          <div key={cat.category ?? i} className={`${card} p-5 sm:p-6`}>
                             <div className="mb-5 flex items-center gap-3">
                               <span className={`h-10 w-10 rounded-xl ${iconBox}`}><CatIcon size={19} /></span>
                               <div className="min-w-0">
                                 <h3 className="font-semibold">{cat.category}</h3>
-                                {cat.description && <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{cat.description}</p>}
+                                {cat.description && <p className={`mt-0.5 text-xs ${soft}`}>{cat.description}</p>}
                               </div>
                             </div>
                             <TechGrid items={cat.items} />
@@ -1007,6 +1546,32 @@ export default function ProjectDetail() {
                       <TechGrid items={flatTech} />
                     </div>
                   )}
+                </Block>
+              )}
+
+              {/* TIMELINE */}
+              {timeline.length > 0 && (
+                <Block id="timeline" icon={Calendar} title="Build timeline" count={timeline.length}>
+                  <ol>
+                    {timeline.map((t, i) => {
+                      const when = typeof t === "object" ? t.date ?? t.phase ?? t.when : null;
+                      const title = typeof t === "object" ? t.title ?? t.name : null;
+                      const desc = typeof t === "string" ? t : t.description;
+                      return (
+                        <li key={i} className="relative grid grid-cols-[2.5rem_1fr] gap-4 pb-6 last:pb-0">
+                          {i < timeline.length - 1 && (
+                            <span aria-hidden="true" className="absolute bottom-0 left-5 top-10 w-px -translate-x-1/2 bg-neutral-300 dark:bg-white/20" />
+                          )}
+                          <span className={`relative z-10 h-10 w-10 rounded-full ${iconBox}`}><Calendar size={16} /></span>
+                          <div className={`${card} p-5`}>
+                            {when && <p className={`text-xs font-medium ${soft}`}>{when}</p>}
+                            {title && <h3 className="mt-0.5 font-semibold">{title}</h3>}
+                            {desc && <p className={`mt-1.5 text-sm leading-7 ${muted}`}>{desc}</p>}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
                 </Block>
               )}
 
@@ -1024,7 +1589,7 @@ export default function ProjectDetail() {
                             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10"><AlertTriangle size={16} /></span>
                             <div className="min-w-0">
                               {title && <h3 className="font-semibold">{title}</h3>}
-                              {problem && <p className={`text-sm leading-7 text-neutral-600 dark:text-neutral-400 ${title ? "mt-1.5" : "pt-1.5"}`}>{problem}</p>}
+                              {problem && <p className={`text-sm leading-7 ${muted} ${title ? "mt-1.5" : "pt-1.5"}`}>{problem}</p>}
                               {solution && problem && (
                                 <div className="mt-3 flex items-start gap-2.5 rounded-xl bg-neutral-50 p-3.5 dark:bg-white/5">
                                   <CheckCircle2 size={15} className="mt-1 shrink-0" />
@@ -1040,19 +1605,14 @@ export default function ProjectDetail() {
                 </Block>
               )}
 
+              {/* RESULTS */}
+              <ListBlock id="results" icon={TrendingUp} title="Results & impact" items={results} ItemIcon={TrendingUp} />
+
+              {/* TESTING */}
+              <ListBlock id="testing" icon={FlaskConical} title="Testing & quality" items={testing} ItemIcon={ShieldCheck} />
+
               {/* LEARNINGS */}
-              {project.learnings?.length > 0 && (
-                <Block id="learnings" icon={GraduationCap} title="Learnings" count={project.learnings.length}>
-                  <ul className="grid gap-3 sm:grid-cols-2">
-                    {project.learnings.map((l, i) => (
-                      <li key={i} className={`${card} flex items-start gap-3.5 p-5`}>
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10"><Lightbulb size={15} /></span>
-                        <p className="pt-1 text-sm leading-7 text-neutral-700 dark:text-neutral-300">{typeof l === "string" ? l : l?.text ?? l?.title}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </Block>
-              )}
+              <ListBlock id="learnings" icon={GraduationCap} title="Learnings" items={project.learnings} ItemIcon={Lightbulb} />
 
               {/* LIMITATIONS */}
               {project.limitations?.length > 0 && (
@@ -1061,7 +1621,7 @@ export default function ProjectDetail() {
                     {project.limitations.map((l, i) => (
                       <li key={i} className="flex items-start gap-3.5 rounded-2xl border border-dashed border-neutral-300 p-5 dark:border-white/20">
                         <AlertCircle size={17} className="mt-1 shrink-0 text-neutral-500" />
-                        <p className="text-sm leading-7 text-neutral-600 dark:text-neutral-400">{typeof l === "string" ? l : l?.text ?? l?.title}</p>
+                        <p className={`text-sm leading-7 ${muted}`}>{textOf(l)}</p>
                       </li>
                     ))}
                   </ul>
@@ -1083,7 +1643,7 @@ export default function ProjectDetail() {
                           <span className={`relative z-10 h-10 w-10 rounded-full text-sm font-semibold ${iconBox}`}>{i + 1}</span>
                           <div className={`${card} p-5`}>
                             {title && <h3 className="font-semibold">{title}</h3>}
-                            {desc && <p className={`text-sm leading-7 text-neutral-600 dark:text-neutral-400 ${title ? "mt-1.5" : ""}`}>{desc}</p>}
+                            {desc && <p className={`text-sm leading-7 ${muted} ${title ? "mt-1.5" : ""}`}>{desc}</p>}
                           </div>
                         </li>
                       );
@@ -1092,30 +1652,71 @@ export default function ProjectDetail() {
                 </Block>
               )}
 
-              {/* LINKS */}
-              {actionLinks.length > 0 && (
-                <Block id="links" icon={Link2} title="Links">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {actionLinks.map((l) => (
-                      <a
-                        key={l.key}
-                        href={project.links[l.key]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`group ${card} flex items-center gap-4 p-5 ${hoverCard} ${focus}`}
-                      >
-                        <span className={`h-12 w-12 rounded-xl ${iconBox}`}><l.icon size={21} /></span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400">{l.label}</p>
-                          <p className="font-semibold">{l.title}</p>
-                          <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">{String(project.links[l.key]).replace(/^https?:\/\//, "")}</p>
+              {/* SETUP */}
+              {hasSetup && (
+                <Block id="setup" icon={Terminal} title="Run it locally">
+                  <div className="space-y-4">
+                    {setup.requirements?.length > 0 && (
+                      <div className={`${card} p-5 sm:p-6`}>
+                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ListChecks size={15} /> Requirements</p>
+                        <ul className="space-y-2">
+                          {setup.requirements.map((r, i) => (
+                            <li key={i} className={`flex items-start gap-2.5 text-sm leading-6 ${muted}`}>
+                              <Check size={14} className="mt-1 shrink-0" /> {r}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {setup.steps?.length > 0 && (
+                      <div className={`${card} p-5 sm:p-6`}>
+                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Terminal size={15} /> Steps</p>
+                        <div className="space-y-2">
+                          {setup.steps.map((s, i) => <CopyLine key={i} text={s} />)}
                         </div>
-                        <ArrowUpRight size={18} className="shrink-0 text-neutral-400 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-neutral-900 dark:group-hover:text-white" />
-                      </a>
-                    ))}
+                      </div>
+                    )}
+                    {setup.env?.length > 0 && (
+                      <div className={`${card} p-5 sm:p-6`}>
+                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ShieldCheck size={15} /> Environment variables</p>
+                        <div className="space-y-2">
+                          {setup.env.map((s, i) => <CopyLine key={i} text={s} />)}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </Block>
               )}
+
+              {/* FAQ */}
+              {faq.length > 0 && (
+                <Block id="faq" icon={HelpCircle} title="FAQ" count={faq.length}>
+                  <Faq items={faq} />
+                </Block>
+              )}
+
+              {/* LINKS */}
+              <Block id="links" icon={Link2} title="Links" count={displayLinks.length}>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {displayLinks.map((l) => (
+                    <a
+                      key={l.key}
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group ${card} flex items-center gap-4 p-5 ${hoverCard} ${focus}`}
+                    >
+                      <span className={`h-12 w-12 rounded-xl ${iconBox}`}><l.icon size={21} /></span>
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-xs ${soft}`}>{l.label}</p>
+                        <p className="font-semibold">{l.title}</p>
+                        <p className={`truncate text-xs ${soft}`}>{l.url.replace(/^https?:\/\//, "")}</p>
+                      </div>
+                      <ArrowUpRight size={18} className="shrink-0 text-neutral-400 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-neutral-900 dark:group-hover:text-white" />
+                    </a>
+                  ))}
+                </div>
+              </Block>
 
               {/* TESTIMONIAL */}
               {project.testimonial && (
@@ -1126,7 +1727,7 @@ export default function ProjectDetail() {
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 dark:bg-white/10"><User size={18} /></span>
                     <span>
                       <span className="block text-sm font-semibold">{project.testimonial.author}</span>
-                      {project.testimonial.role && <span className="block text-xs text-neutral-500 dark:text-neutral-400">{project.testimonial.role}</span>}
+                      {project.testimonial.role && <span className={`block text-xs ${soft}`}>{project.testimonial.role}</span>}
                     </span>
                   </figcaption>
                 </figure>
@@ -1145,7 +1746,7 @@ export default function ProjectDetail() {
                 <Link to={`/projects/${prev.slug}`} className={`group flex items-center gap-4 rounded-2xl border border-neutral-200 p-5 dark:border-white/10 ${hoverCard} ${focus}`}>
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-neutral-300 dark:border-white/15"><ArrowLeft size={18} /></span>
                   <span className="min-w-0">
-                    <span className="block text-xs text-neutral-500 dark:text-neutral-400">Previous</span>
+                    <span className={`block text-xs ${soft}`}>Previous</span>
                     <span className="block truncate font-semibold">{prev.title}</span>
                   </span>
                 </Link>
@@ -1153,7 +1754,7 @@ export default function ProjectDetail() {
               {next && (
                 <Link to={`/projects/${next.slug}`} className={`group flex items-center justify-end gap-4 rounded-2xl border border-neutral-200 p-5 text-right dark:border-white/10 ${hoverCard} ${focus}`}>
                   <span className="min-w-0">
-                    <span className="block text-xs text-neutral-500 dark:text-neutral-400">Next</span>
+                    <span className={`block text-xs ${soft}`}>Next</span>
                     <span className="block truncate font-semibold">{next.title}</span>
                   </span>
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-neutral-300 dark:border-white/15"><ArrowRight size={18} /></span>
@@ -1189,9 +1790,14 @@ export default function ProjectDetail() {
             <Link to="/contact" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-700">
               <Mail size={16} /> Get in touch
             </Link>
-            <a href="https://github.com/Suraj1819" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/30 px-6 text-sm font-semibold transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:border-neutral-900/30 dark:hover:bg-neutral-900/10">
-              <Github size={16} /> GitHub
+            <a href={repoLink?.url ?? GITHUB_PROFILE} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/30 px-6 text-sm font-semibold transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:border-neutral-900/30 dark:hover:bg-neutral-900/10">
+              <Github size={16} /> {repoLink ? "View repository" : "GitHub"}
             </a>
+            {liveLink && (
+              <a href={liveLink.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/30 px-6 text-sm font-semibold transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:border-neutral-900/30 dark:hover:bg-neutral-900/10">
+                <ExternalLink size={16} /> Live demo
+              </a>
+            )}
             <Link to="/projects" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/30 px-6 text-sm font-semibold transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:border-neutral-900/30 dark:hover:bg-neutral-900/10">
               <Code2 size={16} /> All projects
             </Link>
