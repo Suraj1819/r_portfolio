@@ -137,6 +137,57 @@ const hoverCard = "transition hover:border-neutral-900 hover:shadow-lg hover:sha
 const muted = "text-neutral-600 dark:text-neutral-400";
 const soft = "text-neutral-500 dark:text-neutral-400";
 
+/* Colorful tone palette — matches the design system used across pages.
+   Each tone has a light + dark variant. Replaces the all-dark iconBox
+   for section headings, sidebar items, mobile nav, brief card, etc. */
+const TONES = {
+  sky: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  violet: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+  emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  amber: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  orange: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+  red: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  rose: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+  slate: "bg-neutral-100 text-neutral-700 dark:bg-white/[0.07] dark:text-neutral-300",
+  green: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+};
+
+/* Text-only tone coloring — for inline icons (sidebar nav items, etc.)
+   where we don't want a background tint, just a colored icon. */
+const TONE_TEXT = {
+  sky: "text-sky-600 dark:text-sky-400",
+  violet: "text-violet-600 dark:text-violet-400",
+  emerald: "text-emerald-600 dark:text-emerald-400",
+  amber: "text-amber-600 dark:text-amber-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  red: "text-red-600 dark:text-red-400",
+  rose: "text-rose-600 dark:text-rose-400",
+  slate: "text-neutral-600 dark:text-neutral-400",
+  green: "text-emerald-600 dark:text-emerald-400",
+};
+
+/* Map page sections to their accent tone — Block headings, sidebar items,
+   and the mobile section nav all use the same tone. */
+const SECTION_TONES = {
+  "all-projects": "sky",
+  links: "violet",
+  status: "amber",
+  how: "emerald",
+  contact: "rose",
+};
+
+function toneBox(tone = "slate") {
+  return `flex shrink-0 items-center justify-center ${TONES[tone] || TONES.slate}`;
+}
+
+function toneText(tone = "slate") {
+  return TONE_TEXT[tone] || TONE_TEXT.slate;
+}
+
+function sectionTone(id) {
+  return SECTION_TONES[id] || "slate";
+}
+
 const GITHUB_PROFILE = "https://github.com/Suraj1819";
 
 /* ------------------------------------------------------------------ */
@@ -375,7 +426,7 @@ function Block({ id, icon: Icon, title, subtitle, count, children }) {
     <section id={id} className="scroll-mt-28">
       <header className="mb-6 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3.5">
-          <span className={cn("h-11 w-11 rounded-xl", iconBox)}>
+          <span className={cn("h-11 w-11 rounded-xl", toneBox(sectionTone(id)))}>
             <Icon size={20} />
           </span>
           <div>
@@ -486,7 +537,7 @@ function ProjectCover({ project, className }) {
           }}
         />
         <div className="relative">
-          <span className={cn("mx-auto mb-3 h-12 w-12 rounded-2xl", iconBox)}>
+          <span className={cn("mx-auto mb-3 h-12 w-12 rounded-2xl", toneBox("sky"))}>
             <Layers size={22} />
           </span>
           <p className="text-xl font-semibold tracking-tight sm:text-2xl">{project.title}</p>
@@ -1211,12 +1262,12 @@ export default function Projects() {
   );
 
   const brief = [
-    { icon: FolderKanban, label: "Projects", value: stats.totalProjects },
-    { icon: CheckCircle2, label: "Completed", value: stats.completedProjects },
-    { icon: Clock, label: "In progress", value: stats.progress },
-    { icon: Network, label: "Technologies", value: stats.totalTechnologies },
-    { icon: Globe, label: "Live demos", value: stats.liveDemos },
-    { icon: Github, label: "Repositories", value: stats.repositories },
+    { icon: FolderKanban, label: "Projects", value: stats.totalProjects, tone: "sky" },
+    { icon: CheckCircle2, label: "Completed", value: stats.completedProjects, tone: "emerald" },
+    { icon: Clock, label: "In progress", value: stats.progress, tone: "amber" },
+    { icon: Network, label: "Technologies", value: stats.totalTechnologies, tone: "violet" },
+    { icon: Globe, label: "Live demos", value: stats.liveDemos, tone: "rose" },
+    { icon: Github, label: "Repositories", value: stats.repositories, tone: "orange" },
   ];
 
   /* Sidebar sections — mirrors the ProjectDetails.jsx pattern.
@@ -1253,10 +1304,10 @@ export default function Projects() {
             <div>
               <div className="mb-5 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium dark:border-white/10 dark:bg-white/5">
-                  <Sparkles size={12} /> Selected work · Case studies
+                  <Sparkles size={12} className={toneText("violet")} /> Selected work · Case studies
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium dark:border-white/10 dark:bg-white/5">
-                  <Gauge size={12} /> {stats.yearsActive} years of builds
+                  <Gauge size={12} className={toneText("amber")} /> {stats.yearsActive} years of builds
                 </span>
               </div>
 
@@ -1298,7 +1349,7 @@ export default function Projects() {
                 {brief.map((b) => (
                   <div key={b.label}>
                     <dt className={cn("flex items-center gap-1.5 text-xs", soft)}>
-                      <b.icon size={13} /> <span className="hidden sm:inline">{b.label}</span>
+                      <b.icon size={13} className={toneText(b.tone)} /> <span className="hidden sm:inline">{b.label}</span>
                     </dt>
                     <dd className="mt-1.5 text-2xl font-semibold tabular-nums">
                       <Counter value={b.value} />
@@ -1311,7 +1362,7 @@ export default function Projects() {
             {/* Brief card */}
             <div className={cn(card, "h-fit p-6 sm:p-7")}>
               <div className="mb-5 flex items-center gap-3">
-                <span className={cn("h-10 w-10 rounded-xl", iconBox)}>
+                <span className={cn("h-10 w-10 rounded-xl", toneBox("emerald"))}>
                   <FolderKanban size={19} />
                 </span>
                 <div>
@@ -1324,7 +1375,7 @@ export default function Projects() {
                 {brief.map((b) => (
                   <div key={b.label} className="rounded-xl bg-neutral-50 p-3.5 dark:bg-white/5">
                     <dt className={cn("flex items-center gap-1.5 text-xs", soft)}>
-                      <b.icon size={13} /> {b.label}
+                      <b.icon size={13} className={toneText(b.tone)} /> {b.label}
                     </dt>
                     <dd className="mt-1.5 text-xl font-semibold tabular-nums">
                       <Counter value={b.value} />
@@ -1336,7 +1387,7 @@ export default function Projects() {
               {liveNow.length > 0 && (
                 <div className="mt-5 border-t border-neutral-200 pt-5 dark:border-white/10">
                   <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <Globe size={15} /> Try them live
+                    <Globe size={15} className={toneText("rose")} /> Try them live
                   </p>
                   <ul className="space-y-2">
                     {liveNow.slice(0, 4).map((p) => (
@@ -1386,7 +1437,7 @@ export default function Projects() {
                     : "border-neutral-200 bg-white dark:border-white/10 dark:bg-white/5"
                 )}
               >
-                <s.icon size={13} /> {s.label}
+                <s.icon size={13} className={activeSection === s.id ? "" : toneText(sectionTone(s.id))} /> {s.label}
               </a>
             </li>
           ))}
@@ -1415,7 +1466,7 @@ export default function Projects() {
                               : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5"
                           )}
                         >
-                          <s.icon size={14} /> {s.label}
+                          <s.icon size={14} className={activeSection === s.id ? "" : toneText(sectionTone(s.id))} /> {s.label}
                         </a>
                       </li>
                     ))}
@@ -1425,13 +1476,13 @@ export default function Projects() {
                 {/* Portfolio quick stats */}
                 <div className={cn(card, "p-4")}>
                   <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <Sparkles size={14} /> Portfolio
+                    <Sparkles size={14} className={toneText("violet")} /> Portfolio
                   </p>
                   <dl className="space-y-2.5">
                     {brief.slice(0, 4).map((b) => (
                       <div key={b.label} className="flex items-center justify-between gap-2 text-xs">
                         <dt className={cn("flex items-center gap-1.5", soft)}>
-                          <b.icon size={13} /> {b.label}
+                          <b.icon size={13} className={toneText(b.tone)} /> {b.label}
                         </dt>
                         <dd className="font-semibold tabular-nums">{b.value}</dd>
                       </div>
@@ -1442,7 +1493,7 @@ export default function Projects() {
                 {/* Quick links */}
                 <div className={cn(card, "p-4")}>
                   <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <Plug size={14} /> Quick links
+                    <Plug size={14} className={toneText("sky")} /> Quick links
                   </p>
                   <ul className="space-y-2 text-sm">
                     <li>
@@ -1705,7 +1756,7 @@ export default function Projects() {
                     <div key={year}>
                       <div className="mb-4 flex items-center gap-3">
                         <span className={cn("inline-flex h-8 items-center gap-1.5 rounded-full bg-neutral-900 px-3 text-xs font-semibold text-white dark:bg-white dark:text-neutral-900")}>
-                          <Calendar size={12} /> {year}
+                          <Calendar size={12} className={toneText("amber")} /> {year}
                         </span>
                         <span className={cn("text-xs", soft)}>{items.length} {items.length === 1 ? "project" : "projects"}</span>
                         <div className="h-px flex-1 bg-neutral-200 dark:bg-white/10" />
@@ -1806,7 +1857,7 @@ export default function Projects() {
                   <article key={label} className={cn(card, "p-5 sm:p-6")}>
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className={cn("h-10 w-10 rounded-xl", iconBox)}>
+                        <span className={cn("h-10 w-10 rounded-xl", toneBox(tone === "done" ? "emerald" : tone === "progress" ? "amber" : tone === "prototype" ? "violet" : "slate"))}>
                           <Icon size={18} />
                         </span>
                         <h3 className="font-semibold">{label}</h3>
@@ -1850,14 +1901,14 @@ export default function Projects() {
                 { icon: Zap, title: "Clear project details", text: "Open a case study for architecture, implementation details, challenges and outcomes." },
                 { icon: Boxes, title: "Side-by-side compare", text: "Toggle Compare mode and select up to 3 projects to compare attributes in one table." },
                 { icon: Calendar, title: "Timeline view", text: "Switch to the timeline view to browse projects chronologically by year." },
-              ].map((i) => (
-                <li key={i.title} className={cn(card, "flex items-start gap-3.5 p-5", hoverCard)}>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10">
-                    <i.icon size={17} />
+              ].map((item, idx) => (
+                <li key={item.title} className={cn(card, "flex items-start gap-3.5 p-5", hoverCard)}>
+                  <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", toneBox(["sky","violet","emerald","amber","orange","rose","red","slate"][idx % 8]))}>
+                    <item.icon size={17} />
                   </span>
                   <div>
-                    <h3 className="text-sm font-semibold">{i.title}</h3>
-                    <p className={cn("mt-1 text-sm leading-7", muted)}>{i.text}</p>
+                    <h3 className="text-sm font-semibold">{item.title}</h3>
+                    <p className={cn("mt-1 text-sm leading-7", muted)}>{item.text}</p>
                   </div>
                 </li>
               ))}

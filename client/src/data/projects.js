@@ -1,4 +1,901 @@
 export const projects = [
+
+  {
+  "id": "researchflow",
+  "slug": "researchflow",
+  "title": "ResearchFlow",
+  "tagline": "Plan. Collaborate. Research. Deliver.",
+  "category": "Full Stack Web Application",
+  "filters": [
+    "All",
+    "Full Stack",
+    "Academic",
+    "Productivity"
+  ],
+  "featured": true,
+  "status": "Completed",
+  "year": "2026",
+  "duration": "3–6 Months",
+  "role": "Full Stack Developer",
+  "team": "Academic Project",
+  "audience": [
+    "Engineering Students",
+    "Faculty Members",
+    "Project Supervisors",
+    "HODs",
+    "Research Coordinators"
+  ],
+  "platform": [
+    "Web"
+  ],
+  "shortDescription": "ResearchFlow is a completed full-stack academic project lifecycle management platform for engineering colleges. Students create and manage Major and Minor projects, organize teams, assign tasks, track milestones, manage documentation, and monitor progress. Faculty review projects and provide feedback, while coordinators monitor project activities.",
+  "description": "ResearchFlow is a centralized academic project lifecycle management platform for engineering institutions. Students create their own projects, select Major or Minor project types, work individually or in teams, manage project details and tasks, track progress, and organize resources. Team projects support five members including the leader. Student details include registration number, branch, roll number, contact details, and social profile links. The platform includes a project idea library, milestone tracking, responsive dashboards, task notifications, faculty review workflows, project documentation, and light and dark themes.",
+  "highlights": [
+    "Student-created projects",
+    "Major and Minor project support",
+    "Individual and team-based projects",
+    "Five-member teams including the leader",
+    "Academic registration and member information",
+    "GitHub, LinkedIn, and Instagram links",
+    "Project categories and lifecycle stages",
+    "Three-to-six-month project timeline",
+    "Team-only project visibility",
+    "Progress tracking",
+    "Task assignment and tracking",
+    "Task notifications",
+    "Project idea library",
+    "Project document and media management",
+    "Faculty review and feedback",
+    "Role-specific dashboards",
+    "Academic project monitoring",
+    "Responsive interface",
+    "Light and dark themes"
+  ],
+  "technologies": [
+    "React",
+    "Vite",
+    "JavaScript",
+    "Tailwind CSS",
+    "Node.js",
+    "Express.js",
+    "PostgreSQL",
+    "Supabase",
+    "REST APIs"
+  ],
+  "techCategories": [
+    {
+      "category": "Frontend",
+      "technologies": [
+        "React",
+        "Vite",
+        "JavaScript",
+        "Tailwind CSS"
+      ]
+    },
+    {
+      "category": "Backend",
+      "technologies": [
+        "Node.js",
+        "Express.js",
+        "REST APIs"
+      ]
+    },
+    {
+      "category": "Database",
+      "technologies": [
+        "PostgreSQL",
+        "Supabase"
+      ]
+    },
+    {
+      "category": "Tools",
+      "technologies": [
+        "Git",
+        "GitHub",
+        "Visual Studio Code",
+        "Postman"
+      ]
+    },
+    {
+      "category": "Core Concepts",
+      "technologies": [
+        "Role-Based Access Control",
+        "Authentication",
+        "Project Lifecycle Management",
+        "Team Collaboration",
+        "Task Management",
+        "Progress Tracking",
+        "Notifications",
+        "Database Design"
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "label": "Project Types",
+      "value": "2",
+      "description": "Major and Minor projects"
+    },
+    {
+      "label": "Team Size",
+      "value": "5",
+      "description": "Including the team leader"
+    },
+    {
+      "label": "Project Duration",
+      "value": "3–6 Months",
+      "description": "Project timeline"
+    },
+    {
+      "label": "User Roles",
+      "value": "3+",
+      "description": "Students, faculty, and coordinators"
+    }
+  ],
+  "links": {
+    "live": "https://researchflow-kappa.vercel.app",
+    "github": null,
+    "frontend": null,
+    "backend": null,
+    "documentation": null
+  },
+  "image": "/projects/researchflow.png",
+  "preview": "/projects/researchflow-preview.png",
+  "gallery": [
+    "/projects/researchflow-dashboard.png",
+    "/projects/researchflow-projects.png",
+    "/projects/researchflow-project-details.png",
+    "/projects/researchflow-tasks.png",
+    "/projects/researchflow-notifications.png",
+    "/projects/researchflow-faculty-dashboard.png"
+  ],
+  "video": null,
+  "videos": [],
+  "problem": "Engineering students often manage projects through disconnected messaging apps, spreadsheets, and documents, making coordination, documentation, milestone tracking, progress measurement, and structured feedback difficult.",
+  "goals": [
+    "Centralize academic project management",
+    "Allow students to create their own projects",
+    "Support individual and team participation",
+    "Organize projects by type, category, stage, and duration",
+    "Maintain academic and contact information",
+    "Improve task assignment and accountability",
+    "Track progress and milestones",
+    "Support submissions and faculty feedback",
+    "Provide notifications",
+    "Organize documentation and resources",
+    "Enable authorized academic oversight",
+    "Deliver a responsive and accessible interface"
+  ],
+  "responsibilities": [
+    "Plan application architecture",
+    "Develop React frontend",
+    "Build reusable UI components",
+    "Create responsive dashboards and project pages",
+    "Develop Node.js and Express APIs",
+    "Integrate frontend with REST APIs",
+    "Work with PostgreSQL and Supabase",
+    "Implement project and team workflows",
+    "Implement authentication and authorization",
+    "Develop task and notification functionality",
+    "Build review and progress workflows",
+    "Debug frontend and backend integration"
+  ],
+  "architecture": {
+    "pattern": "Client-Server Architecture",
+    "frontend": {
+      "framework": "React",
+      "buildTool": "Vite",
+      "language": "JavaScript",
+      "styling": "Tailwind CSS",
+      "responsibilities": [
+        "Role-specific dashboards",
+        "Project creation and editing",
+        "Team management",
+        "Task management",
+        "Progress visualization",
+        "Submission and review interfaces",
+        "Notifications",
+        "Responsive layouts",
+        "Theme switching"
+      ]
+    },
+    "backend": {
+      "runtime": "Node.js",
+      "framework": "Express.js",
+      "communication": "REST APIs",
+      "responsibilities": [
+        "Request processing",
+        "Input validation",
+        "Authentication and authorization",
+        "Project management",
+        "Team membership",
+        "Task assignment",
+        "Progress and reviews",
+        "Database communication",
+        "API responses"
+      ]
+    },
+    "database": {
+      "technology": "PostgreSQL",
+      "platform": "Supabase",
+      "responsibilities": [
+        "User profiles and roles",
+        "Project records",
+        "Team membership",
+        "Task assignments",
+        "Milestones and submissions",
+        "Reviews and feedback",
+        "Notifications",
+        "Project ideas",
+        "Project file metadata"
+      ]
+    },
+    "dataFlow": [
+      "User interacts with the React frontend",
+      "Frontend sends a request to the backend API",
+      "Backend validates the request and permissions",
+      "Backend reads or updates the database",
+      "Backend returns a structured response",
+      "Frontend updates the interface"
+    ]
+  },
+  "userRoles": [
+    {
+      "id": "student",
+      "title": "Student",
+      "description": "Creates and manages projects, coordinates team members, organizes tasks, submits progress, and maintains resources.",
+      "capabilities": [
+        "Create Major and Minor projects",
+        "Choose individual or team participation",
+        "Manage project details",
+        "Maintain team information",
+        "Add academic and social profiles",
+        "Manage timelines",
+        "Track progress",
+        "Create and manage tasks",
+        "Manage resources",
+        "Explore project ideas",
+        "View notifications",
+        "Review faculty feedback"
+      ]
+    },
+    {
+      "id": "faculty",
+      "title": "Faculty / Project Supervisor",
+      "description": "Reviews authorized projects, monitors progress, evaluates submissions, and provides feedback.",
+      "capabilities": [
+        "View authorized projects",
+        "Inspect project information",
+        "Review progress",
+        "Provide feedback",
+        "Evaluate milestones",
+        "Access authorized documents",
+        "Monitor completion"
+      ]
+    },
+    {
+      "id": "coordinator",
+      "title": "HOD / Research Coordinator",
+      "description": "Monitors academic projects and provides broader oversight according to permissions.",
+      "capabilities": [
+        "Monitor project activities",
+        "Review authorized information",
+        "Track progress",
+        "Monitor milestones",
+        "Support academic reviews",
+        "Access analytics"
+      ]
+    }
+  ],
+  "projectConfiguration": {
+    "projectTypes": [
+      "Major Project",
+      "Minor Project"
+    ],
+    "participationModes": [
+      "Individual Project",
+      "Team Project"
+    ],
+    "teamRules": {
+      "individual": {
+        "enabled": true,
+        "members": 1
+      },
+      "team": {
+        "enabled": true,
+        "totalMembers": 5,
+        "includesLeader": true
+      }
+    },
+    "duration": {
+      "minimumMonths": 3,
+      "maximumMonths": 6
+    },
+    "visibility": [
+      "Team Only"
+    ],
+    "registrationFields": [
+      "Project Title",
+      "Project Description",
+      "Project Type",
+      "Project Category",
+      "Project Stage",
+      "Project Duration",
+      "Participation Mode",
+      "Registration Number",
+      "Branch",
+      "Roll Number",
+      "Member Contact Details",
+      "GitHub Profile",
+      "LinkedIn Profile",
+      "Instagram Profile"
+    ]
+  },
+  "features": [
+    {
+      "id": "authentication",
+      "title": "Authentication and Access Control",
+      "description": "Authenticated access and role-aware workflows.",
+      "status": "Completed"
+    },
+    {
+      "id": "project-management",
+      "title": "Project Creation and Management",
+      "description": "Students create and manage academic projects.",
+      "status": "Completed"
+    },
+    {
+      "id": "team-management",
+      "title": "Team Management",
+      "description": "Individual projects and five-member teams including the leader.",
+      "status": "Completed"
+    },
+    {
+      "id": "project-classification",
+      "title": "Project Classification",
+      "description": "Projects organized by type, category, stage, duration, and visibility.",
+      "status": "Completed"
+    },
+    {
+      "id": "progress-tracking",
+      "title": "Progress Tracking",
+      "description": "Tracks project progress and milestones.",
+      "status": "Completed"
+    },
+    {
+      "id": "task-management",
+      "title": "Task Assignment and Tracking",
+      "description": "Organizes tasks and assigns responsibilities.",
+      "status": "Completed"
+    },
+    {
+      "id": "notifications",
+      "title": "Notification System",
+      "description": "Notifications for task assignments and project activities.",
+      "status": "Completed"
+    },
+    {
+      "id": "project-ideas",
+      "title": "Project Idea Library",
+      "description": "Project inspiration while allowing students to create their own projects.",
+      "status": "Completed"
+    },
+    {
+      "id": "file-management",
+      "title": "Project File and Media Management",
+      "description": "Organizes project documents, photos, videos, and resources.",
+      "status": "Completed"
+    },
+    {
+      "id": "faculty-review",
+      "title": "Faculty Review and Feedback",
+      "description": "Supervisors review progress and provide feedback.",
+      "status": "Completed"
+    },
+    {
+      "id": "coordinator-dashboard",
+      "title": "Coordinator Dashboard",
+      "description": "Academic oversight of projects and progress.",
+      "status": "Completed"
+    },
+    {
+      "id": "theme",
+      "title": "Light and Dark Theme",
+      "description": "Light and dark theme options.",
+      "status": "Completed"
+    },
+    {
+      "id": "responsive-ui",
+      "title": "Responsive User Interface",
+      "description": "Responsive layouts for desktop, tablet, and mobile.",
+      "status": "Completed"
+    }
+  ],
+  "coreWorkflows": [
+    {
+      "title": "Project Creation",
+      "steps": [
+        "Student signs in",
+        "Student opens project creation",
+        "Student chooses Major or Minor",
+        "Student selects individual or team participation",
+        "Student enters project and academic details",
+        "Student configures duration and visibility",
+        "Student creates the project",
+        "Student manages project progress"
+      ]
+    },
+    {
+      "title": "Team Collaboration",
+      "steps": [
+        "Student creates a team project",
+        "Team leader manages team information",
+        "Member academic and contact details are maintained",
+        "Work is divided into tasks",
+        "Tasks are assigned to members",
+        "Notifications are generated",
+        "Members update their work",
+        "Project progress is monitored"
+      ]
+    },
+    {
+      "title": "Faculty Review",
+      "steps": [
+        "Faculty accesses an authorized project",
+        "Faculty inspects details and progress",
+        "Faculty reviews submissions",
+        "Faculty provides feedback or evaluation",
+        "Students review feedback and update work"
+      ]
+    }
+  ],
+  "dataModel": {
+    "entities": [
+      {
+        "name": "users",
+        "purpose": "Stores user profiles, identity information, and roles."
+      },
+      {
+        "name": "projects",
+        "purpose": "Stores project details, classification, duration, visibility, and progress."
+      },
+      {
+        "name": "project_members",
+        "purpose": "Associates users with projects and records membership roles."
+      },
+      {
+        "name": "tasks",
+        "purpose": "Stores task descriptions, assignees, deadlines, and status."
+      },
+      {
+        "name": "milestones",
+        "purpose": "Tracks project stages, target dates, and completion."
+      },
+      {
+        "name": "submissions",
+        "purpose": "Records progress submissions and deliverables."
+      },
+      {
+        "name": "reviews",
+        "purpose": "Stores review records, feedback, and evaluations."
+      },
+      {
+        "name": "notifications",
+        "purpose": "Stores notifications for application events."
+      },
+      {
+        "name": "project_ideas",
+        "purpose": "Maintains the project inspiration library."
+      },
+      {
+        "name": "project_files",
+        "purpose": "Stores metadata and references for project documents and media."
+      }
+    ]
+  },
+  "security": [
+    "Validate incoming backend requests",
+    "Restrict project editing to authorized users",
+    "Enforce project membership permissions",
+    "Restrict faculty access according to assigned permissions",
+    "Validate uploaded file types and sizes",
+    "Protect private project and contact information",
+    "Store secrets in environment variables",
+    "Apply database access policies",
+    "Prevent unauthorized access to project resources"
+  ],
+  "challenges": [
+    {
+      "title": "Role-Based Access Control",
+      "description": "Separating role workflows and protecting authorized resources."
+    },
+    {
+      "title": "Frontend and API Integration",
+      "description": "Maintaining consistent API contracts, authentication, and error handling."
+    },
+    {
+      "title": "Team and Project Relationships",
+      "description": "Representing projects, membership, leadership, and task ownership."
+    },
+    {
+      "title": "Progress Tracking",
+      "description": "Keeping stages, milestones, tasks, submissions, and progress aligned."
+    },
+    {
+      "title": "Notification Management",
+      "description": "Associating notifications with the correct users and activities."
+    }
+  ],
+  "learnings": [
+    "Full-stack application architecture",
+    "React component development",
+    "REST API integration",
+    "Node.js and Express.js backend development",
+    "Relational database design",
+    "Authentication and authorization",
+    "Team and task workflows",
+    "Asynchronous API handling",
+    "Responsive UI development",
+    "Academic project lifecycle modeling"
+  ],
+  "limitations": [],
+  "futureEnhancements": [
+    "Automated milestone reminders",
+    "Project activity history",
+    "Contribution tracking and analytics",
+    "Advanced faculty evaluation rubrics",
+    "Document version history",
+    "GitHub repository integration",
+    "Exportable progress reports",
+    "Coordinator analytics dashboard",
+    "Searchable project repository",
+    "Email notifications",
+    "Audit logging",
+    "Project completion certificates"
+  ],
+  "faq": [
+    {
+      "question": "What is ResearchFlow?",
+      "answer": "ResearchFlow is an academic project lifecycle management platform for engineering students, supervisors, and coordinators."
+    },
+    {
+      "question": "Can students create their own projects?",
+      "answer": "Yes. Students can initiate and manage their own projects."
+    },
+    {
+      "question": "Does ResearchFlow support Major and Minor projects?",
+      "answer": "Yes. Both project types are supported."
+    },
+    {
+      "question": "Can students work individually?",
+      "answer": "Yes. Individual and team projects are supported."
+    },
+    {
+      "question": "What is the team size?",
+      "answer": "Five members in total, including the team leader."
+    },
+    {
+      "question": "What is the project duration?",
+      "answer": "Three to six months."
+    },
+    {
+      "question": "Can faculty review student projects?",
+      "answer": "Yes. Faculty can review progress and provide feedback."
+    },
+    {
+      "question": "Which technologies are used?",
+      "answer": "React, Vite, Tailwind CSS, Node.js, Express.js, PostgreSQL, and Supabase."
+    }
+  ]
+},
+
+  
+  
+
+
+  {
+    id: "webdrop",
+    slug: "webdrop",
+    title: "WebDrop",
+    tagline: "Drop. Connect. Transfer.",
+    category: "Computer Networks / Peer-to-Peer File Sharing",
+    filters: ["Full Stack", "Real-Time", "Networking"],
+    featured: true,
+    status: "Completed",
+    year: "2026",
+    duration: null,
+    role: "Full-Stack Developer",
+    team: "Solo",
+    audience: "Users transferring files between nearby devices",
+    platform: "Web",
+
+    shortDescription:
+      "A browser-based peer-to-peer file-sharing application using WebRTC DataChannels and Socket.IO signaling to connect two devices.",
+
+    description:
+      "WebDrop lets two devices join a room using a short code or QR code and exchange files through WebRTC DataChannels. A Node.js signaling server coordinates peer discovery and WebRTC negotiation. File contents are sent over the peer connection rather than being uploaded to the signaling server for storage. Connection success depends on network conditions and ICE connectivity.",
+
+    highlights: [
+      "Peer-to-peer file transfer through WebRTC DataChannels",
+      "Five-character room codes",
+      "QR-based room joining",
+      "Two-device room limit",
+      "Chunked transfer with backpressure handling",
+      "Responsive send and receive interface",
+      "Host controls and room expiry",
+    ],
+
+    technologies: [
+      "React",
+      "Vite",
+      "Tailwind CSS",
+      "Node.js",
+      "Express.js",
+      "Socket.IO",
+      "WebRTC",
+      "WebRTC DataChannels",
+      "STUN",
+      "html5-qrcode",
+      "JavaScript",
+    ],
+
+    techCategories: [
+      {
+        category: "Frontend",
+        description: "Transfer interface and room management",
+        items: ["React", "Vite", "Tailwind CSS", "JavaScript"],
+      },
+      {
+        category: "Backend",
+        description: "Signaling and peer coordination",
+        items: ["Node.js", "Express.js", "Socket.IO"],
+      },
+      {
+        category: "Networking",
+        description: "Peer connection and file transport",
+        items: ["WebRTC", "DataChannels", "STUN"],
+      },
+      {
+        category: "Utilities",
+        description: "Browser QR scanning",
+        items: ["html5-qrcode"],
+      },
+    ],
+
+    metrics: [
+      {
+        value: "2",
+        label: "Devices",
+        description: "Maximum participants per room",
+      },
+      {
+        value: "5 Characters",
+        label: "Room Code",
+        description: "Short code for joining",
+      },
+      {
+        value: "P2P",
+        label: "Transfer",
+        description: "File bytes travel over the peer connection",
+      },
+      {
+        value: "QR",
+        label: "Pairing",
+        description: "Scan to join a room",
+      },
+    ],
+
+    links: {
+      github: "https://github.com/Suraj1819/web-drop",
+      live: "https://webdrop-eight.vercel.app",
+      backend: "https://bambibackend.onrender.com",
+      docs: "https://github.com/Suraj1819/web-drop#readme",
+    },
+
+    image: null,
+    preview: [],
+    gallery: [
+    ],
+    video: null,
+    videos: [
+      {
+        url: "https://www.youtube.com/watch?v=94g6g5Kwl5Q",
+        title: "WebRTC DataChannels Explained",
+        description: "How peer-to-peer file transfer works in the browser.",
+      },
+      {
+        url: "https://www.youtube.com/watch?v=1SfSLL8DnZ8",
+        title: "Socket.IO Signaling Server",
+        description: "Coordinating WebRTC peer discovery with Socket.IO.",
+      },
+      {
+        url: "https://www.youtube.com/watch?v=Tn6-PIqc4UM",
+        title: "React + Vite Transfer UI",
+        description: "Building the responsive send/receive interface.",
+      },
+    ],
+
+    problem:
+      "Transferring files between devices often requires accounts, cloud uploads, or separate applications. WebDrop aims to make device-to-device sharing accessible through a browser and a temporary room.",
+
+    goals: [
+      "Create a room using a short, shareable code",
+      "Allow joining through a code or QR scan",
+      "Establish a WebRTC peer connection",
+      "Transfer file chunks with backpressure management",
+      "Provide clear connection and transfer states",
+      "Limit rooms to two participants",
+      "Expire inactive rooms and provide host controls",
+    ],
+
+    responsibilities: [
+      "Develop the React user interface",
+      "Implement Socket.IO signaling",
+      "Integrate WebRTC peer connections and DataChannels",
+      "Implement chunked file transfer",
+      "Manage transfer buffering and progress",
+      "Implement room joining and QR workflows",
+      "Build responsive desktop and mobile layouts",
+    ],
+
+    architecture: {
+      summary:
+        "The React client uses Socket.IO to communicate with the signaling backend. The signaling layer coordinates peer discovery and WebRTC negotiation. Once the DataChannel is open, file bytes travel through the peer connection. STUN assists ICE connectivity discovery, but does not guarantee successful connections on every network.",
+
+      components: [
+        {
+          name: "React Client",
+          description: "Room UI, file selection, QR scanning, and transfer progress",
+        },
+        {
+          name: "Express and Socket.IO",
+          description: "Room management and signaling coordination",
+        },
+        {
+          name: "WebRTC DataChannel",
+          description: "Peer-to-peer file transport",
+        },
+        {
+          name: "STUN",
+          description: "ICE connectivity discovery for NAT traversal",
+        },
+      ],
+
+      dataFlow:
+        "Host creates room → server issues room code → second device joins → signaling exchanges session descriptions and ICE candidates → DataChannel opens → file is divided into chunks → sender manages bufferedAmount → receiver reassembles and saves the file",
+    },
+
+    features: [
+      {
+        name: "Five-character room codes",
+        status: "Completed",
+      },
+      {
+        name: "QR-based room joining",
+        status: "Completed",
+      },
+      {
+        name: "Maximum two devices per room",
+        status: "Completed",
+      },
+      {
+        name: "WebRTC DataChannel transfer",
+        status: "Completed",
+      },
+      {
+        name: "Chunked file transfer",
+        status: "Completed",
+      },
+      {
+        name: "Backpressure management",
+        status: "Completed",
+      },
+      {
+        name: "Connection status",
+        status: "Completed",
+      },
+      {
+        name: "Transfer progress and completion state",
+        status: "Completed",
+      },
+      {
+        name: "Host room controls",
+        status: "Completed",
+      },
+      {
+        name: "Room expiration",
+        status: "Completed",
+      },
+      {
+        name: "Responsive send/receive interface",
+        status: "Completed",
+      },
+      {
+        name: "TURN relay fallback",
+        status: "Planned",
+      },
+      {
+        name: "Multi-file queue improvements",
+        status: "Planned",
+      },
+    ],
+
+    challenges: [
+      {
+        title: "NAT traversal",
+        description:
+          "Some firewalls and network configurations prevent direct peer connections.",
+        solution:
+          "Use WebRTC ICE negotiation and STUN-assisted connectivity discovery. A TURN service may be needed for additional connectivity.",
+      },
+      {
+        title: "Large file transfer",
+        description:
+          "Sending large files requires careful handling of DataChannel buffers and incoming chunks.",
+        solution:
+          "Send data in chunks and pause transmission when the buffered amount exceeds the configured high-water mark.",
+      },
+      {
+        title: "Connection-state feedback",
+        description:
+          "Users need to understand whether the other device has joined, connected, or started receiving data.",
+        solution:
+          "Present distinct room, connection, and transfer states in the interface.",
+      },
+    ],
+
+    learnings: [
+      "Difference between WebRTC signaling and data transport",
+      "SDP offers, answers, and ICE candidate exchange",
+      "DataChannel buffering and backpressure",
+      "Peer-to-peer transfer limitations",
+      "Responsive real-time interface design",
+    ],
+
+    limitations: [
+      "Connection success depends on network and firewall configuration",
+      "The room supports two devices",
+      "Transfer speed depends on device performance and network conditions",
+      "A signaling server is required to coordinate connection setup",
+      "A TURN relay fallback is not listed as implemented",
+    ],
+
+    future: [
+      {
+        title: "TURN Relay Support",
+        description:
+          "Add TURN configuration for networks where direct peer connectivity fails.",
+      },
+      {
+        title: "Transfer Queue",
+        description:
+          "Improve multi-file queue management and progress visibility.",
+      },
+      {
+        title: "Room Security",
+        description:
+          "Explore optional room passwords and stronger room access controls.",
+      },
+    ],
+
+    faq: [
+      {
+        question: "Are files stored on the backend?",
+        answer:
+          "The signaling backend coordinates the connection; file contents are intended to travel over the WebRTC peer connection rather than being stored by the signaling service.",
+      },
+      {
+        question: "Will WebDrop work on every network?",
+        answer:
+          "No. Firewall rules, NAT behavior, and browser support can affect peer connectivity.",
+      },
+      {
+        question: "How many devices can join one room?",
+        answer:
+          "The current room design supports up to two devices.",
+      },
+    ],
+  },
   {
     id: "voxsense",
     slug: "voxsense",
@@ -65,7 +962,6 @@ export const projects = [
         items: ["React", "Tailwind CSS"],
       },
     ],
-
     metrics: [
       {
         value: "Audio",
@@ -270,7 +1166,7 @@ export const projects = [
     category: "Full Stack / Travel & Transport",
     filters: ["Full Stack", "Web Application"],
     featured: true,
-    status: "In Progress",
+    status: "completed",
     year: null,
     duration: null,
     role: "Full-Stack Developer",
@@ -343,17 +1239,17 @@ export const projects = [
     ],
 
     links: {
-      github: null,
-      live: null,
+      github: "https://github.com/Suraj1819/college-ride-book",
+      live: "https://buseasily.netlify.app",
       backend: null,
     },
 
     image: null,
     preview: [],
     gallery: [
-      "/projects/buseasily/image/search.png",
-      "/projects/buseasily/image/routes.png",
-      "/projects/buseasily/image/trip-details.png",
+      "https://images.pexels.com/photos/33326934/pexels-photo-33326934.jpeg",
+      "https://images.pexels.com/photos/31988790/pexels-photo-31988790.jpeg",
+      "https://images.pexels.com/photos/12367461/pexels-photo-12367461.jpeg",
     ],
     video: null,
     videos: [
@@ -826,9 +1722,9 @@ export const projects = [
     category: "Full Stack / Real-Time Messaging",
     filters: ["Full Stack", "Real-Time"],
     featured: true,
-    status: "In Progress",
+    status: "completed",
     year: "2026",
-    duration: "Ongoing",
+    duration: "",
     role: "Full-Stack Developer",
     team: "Solo",
     audience: "Users who want a modern messaging experience",
@@ -915,7 +1811,7 @@ export const projects = [
 
     links: {
       github: null,
-      live: null,
+      live: "https://bambi-eight.vercel.app",
       backend: null,
     },
 
@@ -1167,7 +2063,7 @@ export const projects = [
     category: "Desktop / Nearby Transfer",
     filters: ["Desktop", "Networking", "Experimental"],
     featured: true,
-    status: "Prototype",
+    status: "in progress",
     year: "2026",
     duration: "Ongoing",
     role: "Developer",
@@ -1437,7 +2333,7 @@ export const projects = [
     featured: true,
     status: "Live",
     year: "2025",
-    duration: "Ongoing",
+    duration: "",
     role: "Web Developer",
     team: "Project team",
     audience: "Business customers and website visitors",
@@ -1718,7 +2614,7 @@ export const projects = [
     featured: true,
     status: "Live",
     year: "2025",
-    duration: "Ongoing",
+    duration: "",
     role: "Designer & Full-Stack Developer",
     team: "Solo",
     audience: "Recruiters, clients, developers, and collaborators",
@@ -1797,7 +2693,7 @@ export const projects = [
     ],
 
     links: {
-      live: "https://surajzxrt.online",
+      live: "https://suraj-omega.vercel.app",
       github: "https://github.com/Suraj1819",
     },
 

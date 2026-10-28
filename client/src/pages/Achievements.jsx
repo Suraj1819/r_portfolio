@@ -177,20 +177,20 @@ const CATEGORY_FIELDS = {
 };
 
 const PRIMARY_NAV = [
-  { id: "all", title: "All Documents", icon: Grid2X2, kind: "documents" },
-  { id: "recent", title: "Recent", icon: CalendarDays, kind: "documents" },
-  { id: "starred", title: "Starred", icon: Star, kind: "documents" },
+  { id: "all", title: "All Documents", icon: Grid2X2, kind: "documents", tone: "slate" },
+  { id: "recent", title: "Recent", icon: CalendarDays, kind: "documents", tone: "amber" },
+  { id: "starred", title: "Starred", icon: Star, kind: "documents", tone: "rose" },
 ];
 
 const VAULTS = [
-  { id: "certificates", title: "Certificates", icon: Award, categories: ["Certificate", "Course", "Workshop"], kind: "documents" },
-  { id: "skills", title: "Skill Vault", icon: Sparkles, categories: [], kind: "skills" },
-  { id: "projects", title: "Projects", icon: Code2, categories: ["Project", "Report"], kind: "documents" },
-  { id: "assignments", title: "Assignments", icon: BookOpen, categories: ["Assignment"], kind: "documents" },
-  { id: "achievements", title: "Achievements", icon: Trophy, categories: ["Achievement"], kind: "achievements" },
-  { id: "internships", title: "Internships", icon: Briefcase, categories: ["Internship"], kind: "documents" },
-  { id: "academic", title: "Academic", icon: GraduationCap, categories: ["Assignment", "Report", "Course"], kind: "documents" },
-  { id: "other", title: "Other Documents", icon: Folder, categories: ["Other"], kind: "documents" },
+  { id: "certificates", title: "Certificates", icon: Award, categories: ["Certificate", "Course", "Workshop"], kind: "documents", tone: "amber" },
+  { id: "skills", title: "Skill Vault", icon: Sparkles, categories: [], kind: "skills", tone: "sky" },
+  { id: "projects", title: "Projects", icon: Code2, categories: ["Project", "Report"], kind: "documents", tone: "sky" },
+  { id: "assignments", title: "Assignments", icon: BookOpen, categories: ["Assignment"], kind: "documents", tone: "emerald" },
+  { id: "achievements", title: "Achievements", icon: Trophy, categories: ["Achievement"], kind: "achievements", tone: "violet" },
+  { id: "internships", title: "Internships", icon: Briefcase, categories: ["Internship"], kind: "documents", tone: "orange" },
+  { id: "academic", title: "Academic", icon: GraduationCap, categories: ["Assignment", "Report", "Course"], kind: "documents", tone: "emerald" },
+  { id: "other", title: "Other Documents", icon: Folder, categories: ["Other"], kind: "documents", tone: "slate" },
 ];
 
 const ALL_NAV_ITEMS = [...PRIMARY_NAV, ...VAULTS];
@@ -250,10 +250,83 @@ const inputClassName =
   "w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-100 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:focus:border-white dark:focus:ring-white/5";
 
 const TONES = {
-  red: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  sky: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  violet: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+  emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
   amber: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  orange: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+  red: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  rose: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+  slate: "bg-neutral-100 text-neutral-700 dark:bg-white/[0.07] dark:text-neutral-300",
   green: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
 };
+
+const CATEGORY_TONES = {
+  Certificate: "amber",
+  Achievement: "violet",
+  Project: "sky",
+  Assignment: "emerald",
+  Internship: "orange",
+  Workshop: "rose",
+  Course: "sky",
+  Report: "slate",
+  Other: "slate",
+};
+
+const SECTION_TONES = {
+  overview: "emerald",
+  spotlight: "violet",
+  vault: "sky",
+  gallery: "rose",
+  breakdown: "orange",
+  credentials: "red",
+  timeline: "amber",
+  issuers: "emerald",
+  skills: "violet",
+  faq: "slate",
+  connect: "sky",
+};
+
+const METRIC_TONES = {
+  records: "slate",
+  certificates: "amber",
+  projects: "sky",
+  achievements: "violet",
+  internships: "orange",
+  assignments: "emerald",
+  featured: "rose",
+  storage: "sky",
+};
+
+function categoryTone(category) {
+  return CATEGORY_TONES[category] || "slate";
+}
+
+function sectionTone(id) {
+  return SECTION_TONES[id] || "slate";
+}
+
+function toneBox(tone = "slate") {
+  return `flex shrink-0 items-center justify-center ${TONES[tone] || TONES.slate}`;
+}
+
+/* Text-only tone coloring — for inline icons (sidebar nav items, etc.)
+   where we don't want a background tint, just a colored icon. */
+const TONE_TEXT = {
+  sky: "text-sky-600 dark:text-sky-400",
+  violet: "text-violet-600 dark:text-violet-400",
+  emerald: "text-emerald-600 dark:text-emerald-400",
+  amber: "text-amber-600 dark:text-amber-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  red: "text-red-600 dark:text-red-400",
+  rose: "text-rose-600 dark:text-rose-400",
+  slate: "text-neutral-600 dark:text-neutral-400",
+  green: "text-emerald-600 dark:text-emerald-400",
+};
+
+function toneText(tone = "slate") {
+  return TONE_TEXT[tone] || TONE_TEXT.slate;
+}
 
 /* ------------------------------------------------------------------ */
 /*  HELPERS                                                            */
@@ -508,12 +581,91 @@ function Logo({ name, size = "h-6 w-6" }) {
   );
 }
 
+/* Issuer brand matcher — recognizes well-known platforms and shows their
+   official logo instead of a plain letter avatar. Falls back to a letter
+   avatar when no brand is recognized or when the logo fails to load.
+
+   Supports compound names like "LeetCode & GeeksforGeeks" — shows the
+   first brand logo found. */
+const ISSUER_BRANDS = [
+  { re: /leetcode/i, slug: "leetcode", color: "FFA116" },
+  { re: /geeks\s*for\s*geeks|gfg/i, slug: "geeksforgeeks", color: "2F8D46" },
+  { re: /hackerrank/i, slug: "hackerrank", color: "00EA64" },
+  { re: /hackerearth/i, slug: "hackerearth", color: "323754" },
+  { re: /codechef/i, slug: "codechef", color: "5B4638" },
+  { re: /codepen/i, slug: "codepen", color: "000000" },
+  { re: /codesignal/i, slug: "codesignal", color: "0A2540" },
+  { re: /cisco/i, slug: "cisco", color: "1BA0D7" },
+  { re: /google/i, slug: "google", color: "4285F4" },
+  { re: /microsoft/i, slug: "microsoft", color: "5E5E5E" },
+  { re: /aws|amazon\s*web\s*services/i, slug: "amazonaws", color: "FF9900" },
+  { re: /coursera/i, slug: "coursera", color: "0056D3" },
+  { re: /udemy/i, slug: "udemy", color: "A435F0" },
+  { re: /edx/i, slug: "edx", color: "02262B" },
+  { re: /khan\s*academy/i, slug: "khanacademy", color: "14BF96" },
+  { re: /free\s*code\s*camp|freecodecamp/i, slug: "freecodecamp", color: "0A0A0A" },
+  { re: /ibm/i, slug: "ibm", color: "052FAD" },
+  { re: /intel/i, slug: "intel", color: "0071C5" },
+  { re: /nvidia/i, slug: "nvidia", color: "76B900" },
+  { re: /oracle/i, slug: "oracle", color: "F80000" },
+  { re: /hp\b|hewlett\s*packard/i, slug: "hp", color: "0096D6" },
+  { re: /dell/i, slug: "dell", color: "007DB8" },
+  { re: /accenture/i, slug: "accenture", color: "A100FF" },
+  { re: /tcs\b|tata\s*consultancy/i, slug: "tataconsultancyservices", color: "1F2A36" },
+  { re: /infosys/i, slug: "infosys", color: "007CC3" },
+  { re: /wipro/i, slug: "wipro", color: "341F65" },
+  { re: /hcl\b/i, slug: "hcl", color: "0B1F3F" },
+  { re: /netflix/i, slug: "netflix", color: "E50914" },
+  { re: /spotify/i, slug: "spotify", color: "1DB954" },
+  { re: /meta\b|facebook/i, slug: "meta", color: "0467DF" },
+  { re: /apple/i, slug: "apple", color: "000000" },
+  { re: /adobe/i, slug: "adobe", color: "FF0000" },
+  { re: /salesforce/i, slug: "salesforce", color: "00A1E0" },
+  { re: /vmware/i, slug: "vmware", color: "607078" },
+  { re: /red\s*hat|redhat/i, slug: "redhat", color: "EE0000" },
+  { re: /jetbrains/i, slug: "jetbrains", color: "000000" },
+  { re: /veritas/i, slug: "veritas", color: "B6985C" },
+  { re: /niit/i, slug: "niit", color: "0E4A7B" },
+];
+
+function findIssuerBrand(name) {
+  if (!name) return null;
+  return ISSUER_BRANDS.find((b) => b.re.test(name)) || null;
+}
+
+function IssuerAvatar({ name }) {
+  const brand = findIssuerBrand(name);
+  const letter = (name || "?").charAt(0).toUpperCase();
+  return (
+    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-neutral-200 dark:ring-white/10`}>
+      {brand ? (
+        <img
+          src={`https://cdn.simpleicons.org/${brand.slug}/${brand.color}`}
+          alt={name}
+          loading="lazy"
+          className="h-[58%] w-[58%]"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+            const sib = e.currentTarget.nextElementSibling;
+            if (sib) sib.style.display = "flex";
+          }}
+        />
+      ) : null}
+      <span
+        className={`flex h-full w-full items-center justify-center text-base font-semibold ${brand ? "hidden bg-neutral-100 dark:bg-white/10" : "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"}`}
+      >
+        {letter}
+      </span>
+    </span>
+  );
+}
+
 function Block({ id, icon: Icon, title, count, action, children }) {
   return (
     <section id={id} className="scroll-mt-28">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3.5">
-          <span className={`h-11 w-11 rounded-xl ${iconBox}`}>
+          <span className={`h-11 w-11 rounded-xl ${toneBox(sectionTone(id))}`}>
             <Icon size={20} />
           </span>
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
@@ -573,7 +725,7 @@ function ProgressBar({ value, label }) {
 function EmptyState({ title, description, onUpload, showUpload }) {
   return (
     <div className={`${card} flex min-h-64 flex-col items-center justify-center border-dashed px-6 py-12 text-center`}>
-      <span className={`h-14 w-14 rounded-2xl ${iconBox}`}><FolderOpen size={24} /></span>
+      <span className={`h-14 w-14 rounded-2xl ${toneBox("amber")}`}><FolderOpen size={24} /></span>
       <h3 className="mt-5 text-lg font-semibold">{title}</h3>
       <p className={`mt-2 max-w-sm text-sm leading-7 ${muted}`}>{description}</p>
       {showUpload && (
@@ -754,12 +906,12 @@ function PreviewShowcase({ slides }) {
   );
 }
 
-const GALLERY_INITIAL = 6;
+const GALLERY_INITIAL = 999; /* Show ALL images — no limit */
 
 function Gallery({ images }) {
   const [open, setOpen] = useState(null);
   const [broken, setBroken] = useState(() => new Set());
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true); /* Always expanded — show all */
   const closeLightbox = useCallback(() => setOpen(null), []);
 
   const visible = useMemo(() => images.filter((im) => !broken.has(im.src)), [images, broken]);
@@ -847,6 +999,9 @@ function Faq({ items }) {
 
 function VaultNavItem({ item, active, onClick, count, mobile }) {
   const Icon = item.icon;
+  /* Colorful icon — uses the item's tone when inactive, plain when active
+     (active items have a dark/light bg so the icon stays high-contrast). */
+  const iconColor = active ? "" : toneText(item.tone);
   return (
     <button
       type="button"
@@ -865,7 +1020,7 @@ function VaultNavItem({ item, active, onClick, count, mobile }) {
             : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5"
       )}
     >
-      <Icon size={mobile ? 13 : 14} className="shrink-0" />
+      <Icon size={mobile ? 13 : 14} className={cn("shrink-0", iconColor)} />
       <span className="min-w-0 flex-1 truncate">{item.title}</span>
       {typeof count === "number" && count > 0 && (
         <span className={cn("shrink-0 text-[11px] tabular-nums", active ? "opacity-80" : soft)}>{count}</span>
@@ -943,7 +1098,7 @@ function DocumentCard({ item, onPreview, onDelete, onEdit, onToggleFeatured, isA
           </>
         ) : (
           <div className="flex flex-col items-center gap-2.5">
-            <span className={`h-14 w-14 rounded-2xl ${iconBox}`}>
+            <span className={`h-14 w-14 rounded-2xl ${toneBox(categoryTone(item.category))}`}>
               {kind === "pdf" ? <FileText size={24} /> : kind === "image" ? <FileImage size={24} /> : <CategoryIcon size={24} />}
             </span>
             <span className={`text-xs font-medium ${soft}`}>{kind === "pdf" ? "PDF document" : item.category}</span>
@@ -1091,7 +1246,7 @@ function DocumentRow({ item, onPreview, onDelete, onEdit, onToggleFeatured, isAd
 
   return (
     <div className={`${card} flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5 ${hoverCard}`}>
-      <span className={`h-12 w-12 rounded-xl ${iconBox}`}><Icon size={20} /></span>
+      <span className={`h-12 w-12 rounded-xl ${toneBox(categoryTone(item.category))}`}><Icon size={20} /></span>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="break-words font-semibold">{item.title}</h3>
@@ -1189,7 +1344,7 @@ function LoginDialog({ onClose, onSuccess }) {
       <section role="dialog" aria-modal="true" aria-labelledby="login-title" className="w-full max-w-md rounded-t-3xl border border-neutral-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-neutral-900 sm:rounded-3xl sm:p-8">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className={`h-11 w-11 rounded-xl ${iconBox}`}><Lock size={19} /></span>
+            <span className={`h-11 w-11 rounded-xl ${toneBox("amber")}`}><Lock size={19} /></span>
             <div>
               <h2 id="login-title" className="text-lg font-semibold">Admin access</h2>
               <p className={`mt-0.5 text-xs ${soft}`}>Required to upload, edit, delete or feature documents.</p>
@@ -1315,11 +1470,11 @@ function FormDialog({ mode, item, onClose, onSave, saving, error, initialCategor
   const inputRef = useRef(null);
 
   const sections = [
-    ...(isEdit ? [] : [{ id: "file", label: "File", icon: CloudUpload }]),
-    { id: "basic", label: "Basic info", icon: FileText },
-    { id: "dates", label: "Dates", icon: CalendarDays },
-    { id: "credentials", label: "Credentials", icon: ShieldCheck },
-    { id: "additional", label: "Additional", icon: Briefcase },
+    ...(isEdit ? [] : [{ id: "file", label: "File", icon: CloudUpload, tone: "sky" }]),
+    { id: "basic", label: "Basic info", icon: FileText, tone: "violet" },
+    { id: "dates", label: "Dates", icon: CalendarDays, tone: "amber" },
+    { id: "credentials", label: "Credentials", icon: ShieldCheck, tone: "emerald" },
+    { id: "additional", label: "Additional", icon: Briefcase, tone: "orange" },
   ];
   const current = sections[active].id;
   const isLast = active === sections.length - 1;
@@ -1384,7 +1539,7 @@ function FormDialog({ mode, item, onClose, onSave, saving, error, initialCategor
       <section role="dialog" aria-modal="true" aria-labelledby="form-dialog-title" className="flex max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl border border-neutral-200 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900 sm:rounded-3xl">
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-neutral-200 p-5 dark:border-white/10 sm:p-6">
           <div className="flex items-center gap-3">
-            <span className={`h-11 w-11 rounded-xl ${iconBox}`}>{isEdit ? <Pencil size={19} /> : <CloudUpload size={19} />}</span>
+            <span className={`h-11 w-11 rounded-xl ${toneBox(isEdit ? "emerald" : "sky")}`}>{isEdit ? <Pencil size={19} /> : <CloudUpload size={19} />}</span>
             <div>
               <h2 id="form-dialog-title" className="text-lg font-semibold">{isEdit ? "Edit document" : "Upload document"}</h2>
               <p className={`mt-0.5 text-xs ${soft}`}>
@@ -1411,7 +1566,7 @@ function FormDialog({ mode, item, onClose, onSave, saving, error, initialCategor
                   : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5"
               )}
             >
-              <s.icon size={14} />
+              <s.icon size={14} className={active === idx ? "" : toneText(s.tone)} />
               <span className="hidden sm:inline">{s.label}</span>
               <span className="sm:hidden">{idx + 1}</span>
             </button>
@@ -1430,7 +1585,7 @@ function FormDialog({ mode, item, onClose, onSave, saving, error, initialCategor
                   onClick={() => inputRef.current?.click()}
                   className={`flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-5 py-10 text-center transition hover:border-neutral-900 dark:border-white/20 dark:bg-white/[0.02] dark:hover:border-white ${focus}`}
                 >
-                  <span className={`h-14 w-14 rounded-2xl ${iconBox}`}>
+                  <span className={`h-14 w-14 rounded-2xl ${toneBox(file ? "emerald" : "sky")}`}>
                     {file && getFileKind(file) === "image" ? <ImageIcon size={24} /> : file && getFileKind(file) === "pdf" ? <FileText size={24} /> : <Upload size={24} />}
                   </span>
                   <span className="mt-3 break-all text-sm font-medium">{file ? file.name : "Click to choose a file"}</span>
@@ -1931,7 +2086,12 @@ export default function Achievements() {
   const galleryImages = useMemo(() => imageDocs.map((d) => ({ src: d.fileUrl, caption: d.title })), [imageDocs]);
   const spotlight = useMemo(() => {
     const featured = imageDocs.filter((d) => d.featured);
-    return (featured.length ? featured : imageDocs.slice(0, 5)).slice(0, 8).map((d) => ({ src: d.fileUrl, caption: d.title }));
+    /* Show ALL images — no slice limit. If some are featured, show those
+       first (then the rest). Otherwise show all images in upload order. */
+    const ordered = featured.length
+      ? [...featured, ...imageDocs.filter((d) => !d.featured)]
+      : imageDocs;
+    return ordered.map((d) => ({ src: d.fileUrl, caption: d.title }));
   }, [imageDocs]);
 
   const sections = useMemo(
@@ -2139,14 +2299,14 @@ export default function Achievements() {
     insights.years.length > 1 ? `${insights.years[0]} – ${insights.years[insights.years.length - 1]}` : insights.years[0] || "";
 
   const metrics = [
-    { icon: Folder, label: "Total records", value: insights.total, description: "Saved documents and achievements" },
-    { icon: Award, label: "Certificates", value: insights.certificates, description: "Credentials and completed courses" },
-    { icon: Code2, label: "Projects", value: insights.projects, description: "Project records and reports" },
-    { icon: Trophy, label: "Achievements", value: insights.achievements, description: "Milestones and accomplishments" },
-    { icon: Briefcase, label: "Internships", value: insights.internships, description: "Work experience and offer letters" },
-    { icon: BookOpen, label: "Assignments", value: insights.assignments, description: "College coursework and submissions" },
-    { icon: Star, label: "Featured", value: insights.featured, description: "Starred documents shown in the spotlight" },
-    { icon: Cloud, label: "Storage used", value: formatSize(insights.storage), description: `${documents.length} files in cloud storage` },
+    { icon: Folder, label: "Total records", value: insights.total, description: "Saved documents and achievements", tone: METRIC_TONES.records },
+    { icon: Award, label: "Certificates", value: insights.certificates, description: "Credentials and completed courses", tone: METRIC_TONES.certificates },
+    { icon: Code2, label: "Projects", value: insights.projects, description: "Project records and reports", tone: METRIC_TONES.projects },
+    { icon: Trophy, label: "Achievements", value: insights.achievements, description: "Milestones and accomplishments", tone: METRIC_TONES.achievements },
+    { icon: Briefcase, label: "Internships", value: insights.internships, description: "Work experience and offer letters", tone: METRIC_TONES.internships },
+    { icon: BookOpen, label: "Assignments", value: insights.assignments, description: "College coursework and submissions", tone: METRIC_TONES.assignments },
+    { icon: Star, label: "Featured", value: insights.featured, description: "Starred documents shown in the spotlight", tone: METRIC_TONES.featured },
+    { icon: Cloud, label: "Storage used", value: formatSize(insights.storage), description: `${documents.length} files in cloud storage`, tone: METRIC_TONES.storage },
   ];
 
   const briefRows = [
@@ -2225,7 +2385,7 @@ export default function Achievements() {
                     const Icon = getCategoryIcon(category);
                     return (
                       <li key={category} className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white py-1 pl-1 pr-3 text-xs font-medium text-neutral-700 dark:border-white/10 dark:bg-white/5 dark:text-neutral-300">
-                        <span className={`h-5 w-5 rounded-full ${iconBox}`}><Icon size={11} /></span>
+                        <span className={`h-5 w-5 rounded-full ${toneBox(categoryTone(category))}`}><Icon size={11} /></span>
                         {category} · {count}
                       </li>
                     );
@@ -2253,10 +2413,10 @@ export default function Achievements() {
               </div>
             </div>
 
-            {/* Brief card */}
-            <div className={`${card} h-fit p-6 sm:p-7`}>
+            {/* Brief card — hidden on mobile for a minimal hero */}
+            <div className={`${card} hidden h-fit p-6 sm:p-7 lg:block`}>
               <div className="mb-5 flex items-center gap-3">
-                <span className={`h-10 w-10 rounded-xl ${iconBox}`}><Layers size={19} /></span>
+                <span className={`h-10 w-10 rounded-xl ${toneBox("emerald")}`}><Layers size={19} /></span>
                 <div>
                   <h2 className="font-semibold leading-tight">Vault brief</h2>
                   <p className={`text-xs ${soft}`}>At a glance</p>
@@ -2319,13 +2479,15 @@ export default function Achievements() {
         </section>
       )}
 
-      {/* ============ METRICS ============ */}
-      <section className="border-b border-neutral-200 dark:border-white/10">
+      {/* ============ METRICS ============ (hidden on mobile — too cluttered) */}
+      <section className="hidden border-b border-neutral-200 dark:border-white/10 lg:block">
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12">
           <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
             {metrics.map((m) => (
               <div key={m.label} className={`${card} p-5 sm:p-6`}>
-                <m.icon size={18} className={soft} />
+                <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${toneBox(m.tone)}`}>
+                  <m.icon size={18} />
+                </span>
                 <dd className="mt-3 text-3xl font-semibold tracking-tight">{m.value}</dd>
                 <dt className="mt-2 text-sm font-medium">{m.label}</dt>
                 <p className={`mt-1 text-xs leading-5 ${soft}`}>{m.description}</p>
@@ -2348,7 +2510,7 @@ export default function Achievements() {
                     : "border-neutral-200 bg-white dark:border-white/10 dark:bg-white/5"
                 }`}
               >
-                <s.icon size={13} /> {s.label}
+                <s.icon size={13} className={activeSection === s.id ? "" : toneText(sectionTone(s.id))} /> {s.label}
               </a>
             </li>
           ))}
@@ -2387,7 +2549,7 @@ export default function Achievements() {
                               : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5"
                           }`}
                         >
-                          <s.icon size={14} /> {s.label}
+                          <s.icon size={14} className={activeSection === s.id ? "" : toneText(sectionTone(s.id))} /> {s.label}
                         </a>
                       </li>
                     ))}
@@ -2566,7 +2728,7 @@ export default function Achievements() {
                               <button type="button" onClick={() => selectVault(CATEGORY_VAULT[category] || "all", true)} className={`group block w-full text-left ${focus} rounded-lg`}>
                                 <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
                                   <span className="inline-flex items-center gap-2.5 font-medium">
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10"><Icon size={15} /></span>
+                                    <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${toneBox(categoryTone(category))}`}><Icon size={15} /></span>
                                     {category}
                                   </span>
                                   <span className="inline-flex items-center gap-1.5 font-semibold tabular-nums">
@@ -2627,7 +2789,7 @@ export default function Achievements() {
                       return (
                         <li key={item.id}>
                           <button type="button" onClick={() => setPreviewItem(item)} className={`${card} ${hoverCard} flex w-full items-center gap-4 p-5 text-left ${focus}`}>
-                            <span className={`h-11 w-11 rounded-xl ${iconBox}`}><Icon size={19} /></span>
+                            <span className={`h-11 w-11 rounded-xl ${toneBox(categoryTone(item.category))}`}><Icon size={19} /></span>
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-semibold">{item.title}</span>
                               <span className={`block truncate text-xs ${soft}`}>
@@ -2654,7 +2816,7 @@ export default function Achievements() {
                           {i < insights.timeline.length - 1 && (
                             <span aria-hidden="true" className="absolute bottom-0 left-5 top-10 w-px -translate-x-1/2 bg-neutral-300 dark:bg-white/20" />
                           )}
-                          <span className={`relative z-10 h-10 w-10 rounded-full ${iconBox}`}><Icon size={16} /></span>
+                          <span className={`relative z-10 h-10 w-10 rounded-full ${toneBox(categoryTone(item.category))}`}><Icon size={16} /></span>
                           <button type="button" onClick={() => setPreviewItem(item)} className={`${card} ${hoverCard} p-5 text-left ${focus}`}>
                             <p className={`text-xs font-medium ${soft}`}>{formatDate(itemDateValue(item)) || "Recently added"}</p>
                             <h3 className="mt-0.5 font-semibold">{item.title}</h3>
@@ -2677,7 +2839,7 @@ export default function Achievements() {
                       {insights.issuers.map(([name, count]) => (
                         <li key={name} className={`${card} p-5`}>
                           <div className="flex items-center gap-3.5">
-                            <span className={`h-11 w-11 rounded-xl text-base font-semibold ${iconBox}`}>{name.charAt(0).toUpperCase()}</span>
+                            <IssuerAvatar name={name} />
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-semibold">{name}</p>
                               <p className={`text-xs ${soft}`}>{count} {count === 1 ? "record" : "records"}</p>

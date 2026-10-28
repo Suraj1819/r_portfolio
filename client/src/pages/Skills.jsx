@@ -190,6 +190,58 @@ const hoverCard =
 const muted = "text-neutral-600 dark:text-neutral-400";
 const soft = "text-neutral-500 dark:text-neutral-400";
 
+/* Colorful tone palette — matches the design system used across pages.
+   Each tone has a light + dark variant. Replaces the all-dark iconBox
+   for section headings, sidebar items, mobile nav, brief card, etc. */
+const TONES = {
+  sky: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  violet: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+  emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  amber: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  orange: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+  red: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  rose: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+  slate: "bg-neutral-100 text-neutral-700 dark:bg-white/[0.07] dark:text-neutral-300",
+  green: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+};
+
+const TONE_TEXT = {
+  sky: "text-sky-600 dark:text-sky-400",
+  violet: "text-violet-600 dark:text-violet-400",
+  emerald: "text-emerald-600 dark:text-emerald-400",
+  amber: "text-amber-600 dark:text-amber-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  red: "text-red-600 dark:text-red-400",
+  rose: "text-rose-600 dark:text-rose-400",
+  slate: "text-neutral-600 dark:text-neutral-400",
+  green: "text-emerald-600 dark:text-emerald-400",
+};
+
+/* Map page sections to their accent tone — Block headings, sidebar items,
+   and the mobile section nav all use the same tone. */
+const SECTION_TONES = {
+  strengths: "violet",
+  toolkit: "sky",
+  overview: "amber",
+  usage: "emerald",
+  learning: "orange",
+  certs: "rose",
+  approach: "slate",
+  projects: "sky",
+};
+
+function toneBox(tone = "slate") {
+  return `flex shrink-0 items-center justify-center ${TONES[tone] || TONES.slate}`;
+}
+
+function toneText(tone = "slate") {
+  return TONE_TEXT[tone] || TONE_TEXT.slate;
+}
+
+function sectionTone(id) {
+  return SECTION_TONES[id] || "slate";
+}
+
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
@@ -395,7 +447,7 @@ function Block({
           <span
             className={cn(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 sm:rounded-xl",
-              iconBox,
+              toneBox(sectionTone(id)),
             )}
           >
             <Icon size={16} className="sm:h-5 sm:w-5" />
@@ -736,7 +788,7 @@ function CategoryCard({ category, skills, projectCount, onOpen }) {
         <span
           className={cn(
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl",
-            iconBox,
+            toneBox(categoryId(category) === "languages" ? "sky" : categoryId(category) === "frontend" ? "violet" : categoryId(category) === "backend" ? "emerald" : categoryId(category) === "databases" ? "amber" : categoryId(category) === "realtime" ? "orange" : categoryId(category) === "tools" ? "rose" : "slate"),
           )}
         >
           <Icon size={16} className="sm:h-[18px] sm:w-[18px]" />
@@ -1427,13 +1479,14 @@ export default function Skills() {
   const active = useScrollSpy(sections.map((section) => section.id));
 
   const brief = [
-    { icon: Braces, label: "Skills", value: totalSkillCount },
-    { icon: Layers, label: "Categories", value: categories.length },
-    { icon: Briefcase, label: "Projects", value: allProjects.length },
+    { icon: Braces, label: "Skills", value: totalSkillCount, tone: "violet" },
+    { icon: Layers, label: "Categories", value: categories.length, tone: "sky" },
+    { icon: Briefcase, label: "Projects", value: allProjects.length, tone: "emerald" },
     {
       icon: Target,
       label: "Avg level",
       value: average != null ? `${average}%` : null,
+      tone: "amber",
     },
   ].filter((item) => item.value != null && item.value !== 0);
 
@@ -1467,7 +1520,7 @@ export default function Skills() {
             <div>
               <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-5">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-[11px] font-medium dark:border-white/10 dark:bg-white/5 sm:text-xs">
-                  <Sparkles size={12} />
+                  <Sparkles size={12} className={toneText("violet")} />
                   Skills &amp; expertise
                 </span>
               </div>
@@ -1529,7 +1582,7 @@ export default function Skills() {
             {/* COMPACT SUMMARY */}
             <div className={cn(card, "h-fit p-3.5 sm:p-7")}>
               <div className="mb-3 flex items-center gap-3 sm:mb-5">
-                <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl", iconBox)}>
+                <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl", toneBox("violet"))}>
                   <Braces size={17} />
                 </span>
 
@@ -1551,7 +1604,7 @@ export default function Skills() {
                       className="rounded-xl bg-neutral-50 p-2.5 dark:bg-white/5 sm:p-3.5"
                     >
                       <dt className={cn("flex items-center gap-1.5 text-[10px] sm:text-xs", soft)}>
-                        <item.icon size={12} />
+                        <item.icon size={12} className={toneText(item.tone)} />
                         {item.label}
                       </dt>
                       <dd className="mt-1 text-lg font-semibold tabular-nums sm:mt-1.5 sm:text-xl">
@@ -1563,7 +1616,7 @@ export default function Skills() {
               )}
 
               <div className="mt-3 hidden items-start gap-3 rounded-xl bg-neutral-50 p-4 dark:bg-white/5 sm:flex sm:mt-5">
-                <Target size={16} className="mt-0.5 shrink-0" />
+                <Target size={16} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div>
                   <p className="text-sm font-semibold">Current focus</p>
                   <p className={cn("mt-1 text-sm leading-6", muted)}>
@@ -1599,7 +1652,7 @@ export default function Skills() {
                       : "border-neutral-200 bg-white dark:border-white/10 dark:bg-white/5",
                   )}
                 >
-                  <section.icon size={12} />
+                  <section.icon size={12} className={active === section.id ? "" : toneText(sectionTone(section.id))} />
                   {section.label}
                 </a>
               </li>
@@ -1631,7 +1684,7 @@ export default function Skills() {
                               : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5",
                           )}
                         >
-                          <section.icon size={14} />
+                          <section.icon size={14} className={active === section.id ? "" : toneText(sectionTone(section.id))} />
                           {section.label}
                         </a>
                       </li>
@@ -1984,7 +2037,7 @@ export default function Skills() {
                           <span
                             className={cn(
                               "relative z-10 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold sm:h-10 sm:w-10 sm:text-sm",
-                              iconBox,
+                              toneBox("amber"),
                             )}
                           >
                             {index + 1}
@@ -2051,7 +2104,7 @@ export default function Skills() {
 
                       const content = (
                         <>
-                          <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 sm:rounded-xl", iconBox)}>
+                          <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 sm:rounded-xl", toneBox("rose"))}>
                             <Award size={16} className="sm:h-[18px] sm:w-[18px]" />
                           </span>
 

@@ -318,6 +318,71 @@ const hoverCard = "transition hover:border-neutral-900 dark:hover:border-white";
 const muted = "text-neutral-600 dark:text-neutral-400";
 const soft = "text-neutral-500 dark:text-neutral-400";
 
+/* Colorful tone palette — matches the design system used across pages.
+   Each tone has a light + dark variant. Replaces the all-dark iconBox
+   for section headings, sidebar items, mobile nav, brief card, etc. */
+const TONES = {
+  sky: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  violet: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+  emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  amber: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  orange: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+  red: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  rose: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+  slate: "bg-neutral-100 text-neutral-700 dark:bg-white/[0.07] dark:text-neutral-300",
+  green: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+};
+
+/* Text-only tone coloring — for inline icons (sidebar nav items, etc.)
+   where we don't want a background tint, just a colored icon. */
+const TONE_TEXT = {
+  sky: "text-sky-600 dark:text-sky-400",
+  violet: "text-violet-600 dark:text-violet-400",
+  emerald: "text-emerald-600 dark:text-emerald-400",
+  amber: "text-amber-600 dark:text-amber-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  red: "text-red-600 dark:text-red-400",
+  rose: "text-rose-600 dark:text-rose-400",
+  slate: "text-neutral-600 dark:text-neutral-400",
+  green: "text-emerald-600 dark:text-emerald-400",
+};
+
+/* Map page sections to their accent tone — Block headings, sidebar items,
+   and the mobile section nav all use the same tone. */
+const SECTION_TONES = {
+  overview: "emerald",
+  problem: "red",
+  goals: "amber",
+  role: "violet",
+  architecture: "sky",
+  features: "emerald",
+  gallery: "rose",
+  video: "violet",
+  tech: "sky",
+  timeline: "amber",
+  challenges: "orange",
+  results: "emerald",
+  testing: "sky",
+  learnings: "violet",
+  limitations: "red",
+  future: "rose",
+  setup: "slate",
+  faq: "slate",
+  links: "sky",
+};
+
+function toneBox(tone = "slate") {
+  return `flex shrink-0 items-center justify-center ${TONES[tone] || TONES.slate}`;
+}
+
+function toneText(tone = "slate") {
+  return TONE_TEXT[tone] || TONE_TEXT.slate;
+}
+
+function sectionTone(id) {
+  return SECTION_TONES[id] || "slate";
+}
+
 /* ------------------------------------------------------------------ */
 /* Logo pieces                                                         */
 /* ------------------------------------------------------------------ */
@@ -393,7 +458,7 @@ function Block({ id, icon: Icon, title, count, children }) {
     <section id={id} className="scroll-mt-28">
       <header className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3.5">
-          <span className={`h-11 w-11 rounded-xl ${iconBox}`}>
+          <span className={`h-11 w-11 rounded-xl ${toneBox(sectionTone(id))}`}>
             <Icon size={20} />
           </span>
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
@@ -656,7 +721,7 @@ function PreviewShowcase({ slides, title, tagline }) {
   if (total === 0) {
     return (
       <div className="flex aspect-[16/8] flex-col items-center justify-center rounded-3xl border border-dashed border-neutral-300 bg-white px-6 text-center dark:border-white/20 dark:bg-white/[0.03]">
-        <span className={`mb-4 h-14 w-14 rounded-2xl ${iconBox}`}><Layers size={26} /></span>
+        <span className={`mb-4 h-14 w-14 rounded-2xl ${toneBox("sky")}`}><Layers size={26} /></span>
         <p className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</p>
         {tagline && <p className={`mt-2 max-w-md text-sm ${soft}`}>{tagline}</p>}
       </div>
@@ -851,7 +916,7 @@ function VideoEmbed({ video }) {
         <div className="p-5 sm:p-6">
           {title && (
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <Film size={15} className="text-neutral-500" /> {title}
+              <Film size={15} className={toneText("violet")} /> {title}
             </h3>
           )}
           {description && <p className={`mt-2 text-sm leading-7 ${muted}`}>{description}</p>}
@@ -865,7 +930,7 @@ function VideoEmbed({ video }) {
 function EmptyVideo({ title }) {
   return (
     <div className={`${card} flex flex-col items-center justify-center gap-3 border-dashed p-10 text-center`}>
-      <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${iconBox}`}>
+      <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${toneBox("violet")}`}>
         <Film size={26} />
       </span>
       <p className="text-sm font-semibold">{title} demo will appear here soon.</p>
@@ -914,22 +979,22 @@ function ProjectBrief({ project, links, flatTech }) {
   const progress = Number(project.progress);
 
   const rows = [
-    { icon: Calendar, label: "Year", value: fmt(project.year) },
-    { icon: Clock, label: "Duration", value: fmt(project.duration) },
-    { icon: Calendar, label: "Timeline", value: timeline },
-    { icon: User, label: "Role", value: fmt(project.role) },
-    { icon: Users, label: "Team", value: fmt(pick(project, "team", "teamSize")) },
-    { icon: Layers, label: "Category", value: fmt(project.category) },
-    { icon: Briefcase, label: "Project type", value: fmt(pick(project, "type", "projectType")) },
-    { icon: Monitor, label: "Platform", value: fmt(pick(project, "platform", "platforms")) },
-    { icon: Target, label: "Audience", value: fmt(pick(project, "audience", "targetUsers")) },
-    { icon: Briefcase, label: "Client", value: fmt(project.client) },
-    { icon: Cloud, label: "Hosting", value: fmt(pick(project, "hosting", "deployment")) },
-    { icon: GitBranch, label: "Version", value: fmt(project.version) },
-    { icon: ShieldCheck, label: "License", value: fmt(project.license) },
-    { icon: Clock, label: "Last updated", value: fmt(pick(project, "lastUpdated", "updatedAt")) },
-    { icon: Wrench, label: "Technologies", value: flatTech.length ? `${flatTech.length} used` : "" },
-    { icon: CheckCircle2, label: "Status", value: fmt(project.status) },
+    { icon: Calendar, label: "Year", value: fmt(project.year), tone: "amber" },
+    { icon: Clock, label: "Duration", value: fmt(project.duration), tone: "sky" },
+    { icon: Calendar, label: "Timeline", value: timeline, tone: "violet" },
+    { icon: User, label: "Role", value: fmt(project.role), tone: "violet" },
+    { icon: Users, label: "Team", value: fmt(pick(project, "team", "teamSize")), tone: "emerald" },
+    { icon: Layers, label: "Category", value: fmt(project.category), tone: "sky" },
+    { icon: Briefcase, label: "Project type", value: fmt(pick(project, "type", "projectType")), tone: "orange" },
+    { icon: Monitor, label: "Platform", value: fmt(pick(project, "platform", "platforms")), tone: "sky" },
+    { icon: Target, label: "Audience", value: fmt(pick(project, "audience", "targetUsers")), tone: "amber" },
+    { icon: Briefcase, label: "Client", value: fmt(project.client), tone: "orange" },
+    { icon: Cloud, label: "Hosting", value: fmt(pick(project, "hosting", "deployment")), tone: "sky" },
+    { icon: GitBranch, label: "Version", value: fmt(project.version), tone: "rose" },
+    { icon: ShieldCheck, label: "License", value: fmt(project.license), tone: "emerald" },
+    { icon: Clock, label: "Last updated", value: fmt(pick(project, "lastUpdated", "updatedAt")), tone: "amber" },
+    { icon: Wrench, label: "Technologies", value: flatTech.length ? `${flatTech.length} used` : "", tone: "sky" },
+    { icon: CheckCircle2, label: "Status", value: fmt(project.status), tone: "emerald" },
   ].filter((r) => r.value);
 
   const quick = links.slice(0, 4);
@@ -938,7 +1003,7 @@ function ProjectBrief({ project, links, flatTech }) {
     <div className={`${card} h-fit p-4 sm:p-5`}>
       {/* Header — more compact */}
       <div className="mb-4 flex items-center gap-2.5">
-        <span className={`h-9 w-9 rounded-lg ${iconBox}`}><FileCode size={17} /></span>
+        <span className={`h-9 w-9 rounded-lg ${toneBox("sky")}`}><FileCode size={17} /></span>
         <div>
           <h2 className="text-sm font-semibold leading-tight">Project brief</h2>
           <p className={`text-[11px] ${soft}`}>At a glance</p>
@@ -951,7 +1016,7 @@ function ProjectBrief({ project, links, flatTech }) {
           {rows.map((b) => (
             <div key={b.label} className="rounded-lg bg-neutral-50 p-2.5 dark:bg-white/5">
               <dt className={`flex items-center gap-1 text-[11px] ${soft}`}>
-                <b.icon size={12} /> {b.label}
+                <b.icon size={12} className={toneText(b.tone)} /> {b.label}
               </dt>
               <dd className="mt-1 break-words text-xs font-semibold sm:text-sm">{b.value}</dd>
             </div>
@@ -975,11 +1040,11 @@ function ProjectBrief({ project, links, flatTech }) {
       {/* Responsibilities — compact */}
       {responsibilities.length > 0 && (
         <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-white/10">
-          <p className="mb-2 flex items-center gap-2 text-xs font-semibold"><ListChecks size={14} /> My responsibilities</p>
+          <p className="mb-2 flex items-center gap-2 text-xs font-semibold"><ListChecks size={14} className={toneText("violet")} /> My responsibilities</p>
           <ul className="space-y-1.5">
             {responsibilities.slice(0, 5).map((r, i) => (
               <li key={i} className={`flex items-start gap-2 text-xs leading-5 ${muted}`}>
-                <CheckCircle2 size={12} className="mt-0.5 shrink-0 text-neutral-900 dark:text-white" /> {r}
+                <CheckCircle2 size={12} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" /> {r}
               </li>
             ))}
           </ul>
@@ -1203,12 +1268,12 @@ export default function ProjectDetail() {
   };
 
   const counts = [
-    { icon: CheckCircle2, value: project.features?.length, label: "Features" },
-    { icon: Wrench, value: flatTech.length, label: "Technologies" },
-    { icon: Target, value: project.goals?.length, label: "Goals" },
-    { icon: AlertTriangle, value: project.challenges?.length, label: "Challenges" },
-    { icon: ImageIcon, value: gallery.length, label: "Screenshots" },
-    { icon: Rocket, value: project.future?.length, label: "Roadmap items" },
+    { icon: CheckCircle2, value: project.features?.length, label: "Features", tone: "emerald" },
+    { icon: Wrench, value: flatTech.length, label: "Technologies", tone: "sky" },
+    { icon: Target, value: project.goals?.length, label: "Goals", tone: "amber" },
+    { icon: AlertTriangle, value: project.challenges?.length, label: "Challenges", tone: "orange" },
+    { icon: ImageIcon, value: gallery.length, label: "Screenshots", tone: "rose" },
+    { icon: Rocket, value: project.future?.length, label: "Roadmap items", tone: "violet" },
   ].filter((c) => c.value > 0);
 
   const flowSteps = project.architecture?.dataFlow
@@ -1239,12 +1304,12 @@ export default function ProjectDetail() {
               <div className="mb-5 flex flex-wrap items-center gap-2">
                 {project.category && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium dark:border-white/10 dark:bg-white/5">
-                    <Layers size={12} /> {project.category}
+                    <Layers size={12} className={toneText("sky")} /> {project.category}
                   </span>
                 )}
                 {project.year && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium dark:border-white/10 dark:bg-white/5">
-                    <Calendar size={12} /> {project.year}
+                    <Calendar size={12} className={toneText("amber")} /> {project.year}
                   </span>
                 )}
                 <StatusBadge status={project.status} />
@@ -1255,7 +1320,7 @@ export default function ProjectDetail() {
 
               {audience && (
                 <p className={`mt-4 flex max-w-xl items-start gap-2 text-sm ${soft}`}>
-                  <Users size={15} className="mt-0.5 shrink-0" /> Built for: {audience}
+                  <Users size={15} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" /> Built for: {audience}
                 </p>
               )}
 
@@ -1322,7 +1387,7 @@ export default function ProjectDetail() {
                     : "border-neutral-200 bg-white dark:border-white/10 dark:bg-white/5"
                 }`}
               >
-                <s.icon size={13} /> {s.label}
+                <s.icon size={13} className={active === s.id ? "" : toneText(sectionTone(s.id))} /> {s.label}
               </a>
             </li>
           ))}
@@ -1349,7 +1414,7 @@ export default function ProjectDetail() {
                               : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5"
                           }`}
                         >
-                          <s.icon size={14} /> {s.label}
+                          <s.icon size={14} className={active === s.id ? "" : toneText(sectionTone(s.id))} /> {s.label}
                         </a>
                       </li>
                     ))}
@@ -1357,7 +1422,7 @@ export default function ProjectDetail() {
                 </nav>
 
                 <div className={`${card} p-4`}>
-                  <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Sparkles size={14} /> Quick links</p>
+                  <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Sparkles size={14} className={toneText("violet")} /> Quick links</p>
                   <ul className="space-y-2 text-sm">
                     {displayLinks.slice(0, 4).map((l) => (
                       <li key={l.key}>
@@ -1396,7 +1461,9 @@ export default function ProjectDetail() {
                   <dl className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {counts.map((c) => (
                       <div key={c.label} className={`${card} p-4`}>
-                        <c.icon size={18} className={soft} />
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${toneBox(c.tone)}`}>
+                          <c.icon size={18} />
+                        </span>
                         <dd className="mt-3 text-2xl font-semibold leading-none">{c.value}</dd>
                         <dt className={`mt-1.5 text-xs ${soft}`}>{c.label}</dt>
                       </div>
@@ -1426,7 +1493,7 @@ export default function ProjectDetail() {
                   <div className="space-y-4">
                     {project.architecture.summary && (
                       <div className={`${card} p-6 sm:p-7`}>
-                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Workflow size={16} /> Summary</p>
+                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Workflow size={16} className={toneText("sky")} /> Summary</p>
                         <p className={`leading-8 ${muted}`}>{project.architecture.summary}</p>
                       </div>
                     )}
@@ -1440,7 +1507,7 @@ export default function ProjectDetail() {
                           return (
                             <li key={`${label}-${i}`} className={`${card} p-5`}>
                               <div className="flex items-center gap-3">
-                                <span className={`h-10 w-10 rounded-xl ${iconBox}`}><Ic size={18} /></span>
+                                <span className={`h-10 w-10 rounded-xl ${toneBox(["sky","violet","emerald","amber","orange","rose","red","slate"][i % 8])}`}><Ic size={18} /></span>
                                 <p className="font-semibold">{label}</p>
                               </div>
                               {desc && <p className={`mt-3 text-sm leading-6 ${soft}`}>{desc}</p>}
@@ -1452,7 +1519,7 @@ export default function ProjectDetail() {
 
                     {project.architecture.dataFlow && (
                       <div className={`${card} p-6 sm:p-7`}>
-                        <p className="mb-4 flex items-center gap-2 text-sm font-semibold"><GitBranch size={16} /> Data flow</p>
+                        <p className="mb-4 flex items-center gap-2 text-sm font-semibold"><GitBranch size={16} className={toneText("rose")} /> Data flow</p>
                         {flowSteps.length >= 3 ? (
                           <ol className="flex flex-wrap items-center gap-2">
                             {flowSteps.map((step, i) => (
@@ -1482,7 +1549,7 @@ export default function ProjectDetail() {
                       return (
                         <li key={`${name}-${i}`} className={`${card} flex h-full flex-col p-5 sm:p-6`}>
                           <div className="mb-4 flex items-start justify-between gap-3">
-                            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10"><CheckCircle2 size={17} /></span>
+                            <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${toneBox("emerald")}`}><CheckCircle2 size={17} /></span>
                             <StatusBadge status={status} />
                           </div>
                           <h3 className="font-semibold">{name}</h3>
@@ -1530,7 +1597,7 @@ export default function ProjectDetail() {
                         return (
                           <div key={cat.category ?? i} className={`${card} p-5 sm:p-6`}>
                             <div className="mb-5 flex items-center gap-3">
-                              <span className={`h-10 w-10 rounded-xl ${iconBox}`}><CatIcon size={19} /></span>
+                              <span className={`h-10 w-10 rounded-xl ${toneBox(["sky","violet","emerald","amber","orange","rose","red","slate"][i % 8])}`}><CatIcon size={19} /></span>
                               <div className="min-w-0">
                                 <h3 className="font-semibold">{cat.category}</h3>
                                 {cat.description && <p className={`mt-0.5 text-xs ${soft}`}>{cat.description}</p>}
@@ -1562,7 +1629,7 @@ export default function ProjectDetail() {
                           {i < timeline.length - 1 && (
                             <span aria-hidden="true" className="absolute bottom-0 left-5 top-10 w-px -translate-x-1/2 bg-neutral-300 dark:bg-white/20" />
                           )}
-                          <span className={`relative z-10 h-10 w-10 rounded-full ${iconBox}`}><Calendar size={16} /></span>
+                          <span className={`relative z-10 h-10 w-10 rounded-full ${toneBox("amber")}`}><Calendar size={16} /></span>
                           <div className={`${card} p-5`}>
                             {when && <p className={`text-xs font-medium ${soft}`}>{when}</p>}
                             {title && <h3 className="mt-0.5 font-semibold">{title}</h3>}
@@ -1586,7 +1653,7 @@ export default function ProjectDetail() {
                       return (
                         <li key={i} className={`${card} p-5 sm:p-6`}>
                           <div className="flex items-start gap-3.5">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10"><AlertTriangle size={16} /></span>
+                            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toneBox("orange")}`}><AlertTriangle size={16} /></span>
                             <div className="min-w-0">
                               {title && <h3 className="font-semibold">{title}</h3>}
                               {problem && <p className={`text-sm leading-7 ${muted} ${title ? "mt-1.5" : "pt-1.5"}`}>{problem}</p>}
@@ -1620,7 +1687,7 @@ export default function ProjectDetail() {
                   <ul className="space-y-3">
                     {project.limitations.map((l, i) => (
                       <li key={i} className="flex items-start gap-3.5 rounded-2xl border border-dashed border-neutral-300 p-5 dark:border-white/20">
-                        <AlertCircle size={17} className="mt-1 shrink-0 text-neutral-500" />
+                        <AlertCircle size={17} className="mt-1 shrink-0 text-red-600 dark:text-red-400" />
                         <p className={`text-sm leading-7 ${muted}`}>{textOf(l)}</p>
                       </li>
                     ))}
@@ -1640,7 +1707,7 @@ export default function ProjectDetail() {
                           {i < project.future.length - 1 && (
                             <span aria-hidden="true" className="absolute bottom-0 left-5 top-10 w-px -translate-x-1/2 bg-neutral-300 dark:bg-white/20" />
                           )}
-                          <span className={`relative z-10 h-10 w-10 rounded-full text-sm font-semibold ${iconBox}`}>{i + 1}</span>
+                          <span className={`relative z-10 h-10 w-10 rounded-full text-sm font-semibold ${toneBox("rose")}`}>{i + 1}</span>
                           <div className={`${card} p-5`}>
                             {title && <h3 className="font-semibold">{title}</h3>}
                             {desc && <p className={`text-sm leading-7 ${muted} ${title ? "mt-1.5" : ""}`}>{desc}</p>}
@@ -1658,11 +1725,11 @@ export default function ProjectDetail() {
                   <div className="space-y-4">
                     {setup.requirements?.length > 0 && (
                       <div className={`${card} p-5 sm:p-6`}>
-                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ListChecks size={15} /> Requirements</p>
+                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ListChecks size={15} className={toneText("emerald")} /> Requirements</p>
                         <ul className="space-y-2">
                           {setup.requirements.map((r, i) => (
                             <li key={i} className={`flex items-start gap-2.5 text-sm leading-6 ${muted}`}>
-                              <Check size={14} className="mt-1 shrink-0" /> {r}
+                              <Check size={14} className="mt-1 shrink-0 text-emerald-600 dark:text-emerald-400" /> {r}
                             </li>
                           ))}
                         </ul>
@@ -1670,7 +1737,7 @@ export default function ProjectDetail() {
                     )}
                     {setup.steps?.length > 0 && (
                       <div className={`${card} p-5 sm:p-6`}>
-                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Terminal size={15} /> Steps</p>
+                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Terminal size={15} className={toneText("slate")} /> Steps</p>
                         <div className="space-y-2">
                           {setup.steps.map((s, i) => <CopyLine key={i} text={s} />)}
                         </div>
@@ -1678,7 +1745,7 @@ export default function ProjectDetail() {
                     )}
                     {setup.env?.length > 0 && (
                       <div className={`${card} p-5 sm:p-6`}>
-                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ShieldCheck size={15} /> Environment variables</p>
+                        <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ShieldCheck size={15} className={toneText("emerald")} /> Environment variables</p>
                         <div className="space-y-2">
                           {setup.env.map((s, i) => <CopyLine key={i} text={s} />)}
                         </div>
@@ -1706,7 +1773,7 @@ export default function ProjectDetail() {
                       rel="noopener noreferrer"
                       className={`group ${card} flex items-center gap-4 p-5 ${hoverCard} ${focus}`}
                     >
-                      <span className={`h-12 w-12 rounded-xl ${iconBox}`}><l.icon size={21} /></span>
+                      <span className={`h-12 w-12 rounded-xl ${toneBox("sky")}`}><l.icon size={21} /></span>
                       <div className="min-w-0 flex-1">
                         <p className={`text-xs ${soft}`}>{l.label}</p>
                         <p className="font-semibold">{l.title}</p>
@@ -1721,10 +1788,10 @@ export default function ProjectDetail() {
               {/* TESTIMONIAL */}
               {project.testimonial && (
                 <figure className={`${card} p-6 sm:p-9`}>
-                  <Quote size={30} className="mb-4 text-neutral-300 dark:text-neutral-600" />
+                  <Quote size={30} className="mb-4 text-violet-300 dark:text-violet-500/60" />
                   <blockquote className="text-lg leading-8">&ldquo;{project.testimonial.quote}&rdquo;</blockquote>
                   <figcaption className="mt-6 flex items-center gap-3 border-t border-neutral-200 pt-5 dark:border-white/10">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 dark:bg-white/10"><User size={18} /></span>
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-full ${toneBox("violet")}`}><User size={18} /></span>
                     <span>
                       <span className="block text-sm font-semibold">{project.testimonial.author}</span>
                       {project.testimonial.role && <span className={`block text-xs ${soft}`}>{project.testimonial.role}</span>}
@@ -1767,7 +1834,7 @@ export default function ProjectDetail() {
             <>
               <div className="mb-6 flex items-center justify-between gap-4">
                 <h2 className="flex items-center gap-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                  <span className={`h-11 w-11 rounded-xl ${iconBox}`}><Code2 size={20} /></span>
+                  <span className={`h-11 w-11 rounded-xl ${toneBox("sky")}`}><Code2 size={20} /></span>
                   More projects
                 </h2>
                 <Link to="/projects" className={`inline-flex items-center gap-1.5 text-sm font-semibold underline-offset-4 hover:underline ${focus}`}>

@@ -64,7 +64,7 @@ const identity = {
   location: profile.location || "Muzaffarpur, Bihar, India",
   resumePath: profile.resumePath || "/resume.pdf",
   github: profile.github || "https://github.com/Suraj1819",
-  photo: profile.photo || "/profile.jpg",
+  photo: profile.photo || "../../public//suraj.jpg",
 };
 
 /* ------------------------------------------------------------------ */
@@ -79,6 +79,51 @@ const hoverCard =
   "transition hover:border-neutral-900 dark:hover:border-white";
 const muted = "text-neutral-600 dark:text-neutral-400";
 const soft = "text-neutral-500 dark:text-neutral-400";
+
+/* Colorful tone palette — matches the design system used across pages. */
+const TONES = {
+  sky: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  violet: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+  emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  amber: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  orange: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+  red: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  rose: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+  slate: "bg-neutral-100 text-neutral-700 dark:bg-white/[0.07] dark:text-neutral-300",
+  green: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+};
+
+const TONE_TEXT = {
+  sky: "text-sky-600 dark:text-sky-400",
+  violet: "text-violet-600 dark:text-violet-400",
+  emerald: "text-emerald-600 dark:text-emerald-400",
+  amber: "text-amber-600 dark:text-amber-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  red: "text-red-600 dark:text-red-400",
+  rose: "text-rose-600 dark:text-rose-400",
+  slate: "text-neutral-600 dark:text-neutral-400",
+  green: "text-emerald-600 dark:text-emerald-400",
+};
+
+/* Map page sections to their accent tone. */
+const SECTION_TONES = {
+  education: "emerald",
+  experience: "sky",
+  gallery: "rose",
+  video: "violet",
+};
+
+function toneBox(tone = "slate") {
+  return `flex shrink-0 items-center justify-center ${TONES[tone] || TONES.slate}`;
+}
+
+function toneText(tone = "slate") {
+  return TONE_TEXT[tone] || TONE_TEXT.slate;
+}
+
+function sectionTone(id) {
+  return SECTION_TONES[id] || "slate";
+}
 
 /* ------------------------------------------------------------------ */
 /*  Tech logos (official brand colours — from ProjectDetail.jsx)        */
@@ -254,10 +299,10 @@ const educationTimeline = [
     period: "2020",
     year: "2020",
     duration: "1 year",
-    board: "BSEB",
+    board: "CBSE",
     stream: "Secondary",
     result: "Passed",
-    percentage: "78%",
+    percentage: "82.6%",
     scoreLabel: "Percentage",
     description:
       "Completed secondary education with a science and mathematics focus. Built early habits around logical reasoning and consistent study that later supported programming coursework.",
@@ -274,10 +319,10 @@ const educationTimeline = [
     period: "2022",
     year: "2022",
     duration: "2 years (2020 – 2022)",
-    board: "BIEC",
+    board: "CBSE",
     stream: "Science (PCM)",
     result: "Passed",
-    percentage: "72%",
+    percentage: "83.2%",
     scoreLabel: "Percentage",
     description:
       "Completed higher secondary in the science stream with physics, chemistry and mathematics. Strengthened analytical thinking and developed interest in computers and problem-solving that led toward Computer Science Engineering.",
@@ -315,16 +360,16 @@ const educationTimeline = [
     highlights: ["Core CS curriculum", "DSA practice", "Web technologies", "Computer networks"],
     // Semester-wise CGPA — shown in expandable dropdown
     semesters: [
-      { sem: "Semester 1", sgpa: "7.2", year: "2022" },
-      { sem: "Semester 2", sgpa: "7.5", year: "2023" },
-      { sem: "Semester 3", sgpa: "7.6", year: "2023" },
-      { sem: "Semester 4", sgpa: "7.8", year: "2023" },
-      { sem: "Semester 5", sgpa: "8.0", year: "2024" },
-      { sem: "Semester 6", sgpa: "8.1", year: "2024" },
-      { sem: "Semester 7", sgpa: "In progress", year: "2025", current: true },
+      { sem: "Semester 1", sgpa: "8.68", year: "2023" },
+      { sem: "Semester 2", sgpa: "8.43", year: "2023" },
+      { sem: "Semester 3", sgpa: "8.81", year: "2024" },
+      { sem: "Semester 4", sgpa: "8.3", year: "2024" },
+      { sem: "Semester 5", sgpa: "8.43", year: "2025" },
+      { sem: "Semester 6", sgpa: "In progress", year: "2025" },
+      { sem: "Semester 7", sgpa: "Upcoming", year: "2026", current: true },
       { sem: "Semester 8", sgpa: "Upcoming", year: "2026" },
     ],
-    overallCgpa: "7.8 / 10",
+    overallCgpa: "8.54 / 10",
   },
 ];
 
@@ -353,7 +398,7 @@ const experienceTimeline = [
     location: "Remote · Production site",
     period: "2025 – Present",
     year: "2025+",
-    duration: "Ongoing",
+    duration: "completed",
     role: "Web Developer",
     employment: "Freelance / Contract",
     description:
@@ -505,10 +550,10 @@ function TimelineItem({ item, index }) {
   return (
     <Reveal delay={index * 50}>
       <div className="relative mb-8 pl-8 last:mb-0 sm:mb-12 sm:pl-14">
-        {/* Monochrome dark icon marker */}
+        {/* Colorful icon marker */}
         <span
           className={cn(
-            iconBox,
+            toneBox(isEducation ? "emerald" : "sky"),
             "absolute -left-[19px] top-1 flex h-9 w-9 items-center justify-center rounded-full ring-4 ring-neutral-50 dark:ring-neutral-950 sm:-left-[28px] sm:h-12 sm:w-12 sm:rounded-xl"
           )}
         >
@@ -967,7 +1012,7 @@ function Block({ id, icon: Icon, title, count, children }) {
     <div id={id} className="scroll-mt-28">
       <header className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3.5">
-          <span className={cn(iconBox, "flex h-11 w-11 items-center justify-center rounded-xl")}>
+          <span className={cn(toneBox(sectionTone(id)), "flex h-11 w-11 items-center justify-center rounded-xl")}>
             <Icon size={20} strokeWidth={1.6} />
           </span>
           <h3 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-2xl">
@@ -1002,7 +1047,7 @@ function TimelineSection() {
         {/* Section header */}
         <Reveal>
           <div className="mb-8 flex items-center gap-3 sm:mb-12 sm:gap-4">
-            <span className={cn(iconBox, "flex h-11 w-11 items-center justify-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl")}>
+            <span className={cn(toneBox("amber"), "flex h-11 w-11 items-center justify-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl")}>
               <Calendar size={20} strokeWidth={1.6} />
             </span>
             <div>
@@ -1034,7 +1079,7 @@ function TimelineSection() {
                         : "border-neutral-200 bg-white dark:border-white/10 dark:bg-white/5"
                     )}
                   >
-                    <NIcon size={13} /> {n.label}
+                    <NIcon size={13} className={active === n.id ? "" : toneText(sectionTone(n.id))} /> {n.label}
                   </a>
                 </li>
               );
@@ -1064,7 +1109,7 @@ function TimelineSection() {
                               : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/5"
                           )}
                         >
-                          <NIcon size={14} /> {n.label}
+                          <NIcon size={14} className={active === n.id ? "" : toneText(sectionTone(n.id))} /> {n.label}
                         </a>
                       </li>
                     );
@@ -1075,7 +1120,7 @@ function TimelineSection() {
               {/* Quick stats card (ProjectDetail style) */}
               <div className={cn(card, "p-4")}>
                 <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                  <Sparkles size={14} /> Quick stats
+                  <Sparkles size={14} className={toneText("violet")} /> Quick stats
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center justify-between">
@@ -1101,7 +1146,7 @@ function TimelineSection() {
               <div key={group.id} id={group.id} className="scroll-mt-28">
                 {/* Group subheader with icon */}
                 <div className="mb-6 flex items-center gap-3">
-                  <span className={cn(iconBox, "flex h-10 w-10 items-center justify-center rounded-xl")}>
+                  <span className={cn(toneBox(group.id === "education" ? "emerald" : "sky"), "flex h-10 w-10 items-center justify-center rounded-xl")}>
                     <group.icon size={18} strokeWidth={1.6} />
                   </span>
                   <div>
@@ -1303,13 +1348,13 @@ function SectionLabel({ children }) {
   );
 }
 
-/* Monochrome dark icon box — matches ProjectDetail.jsx iconBox */
-function IconBox({ icon: Icon, size = "h-11 w-11", iconSize = 20, className = "" }) {
+/* Colorful icon box — uses tone-based coloring instead of all-dark */
+function IconBox({ icon: Icon, size = "h-11 w-11", iconSize = 20, className = "", tone = "slate" }) {
   return (
     <span
       className={cn(
         "flex shrink-0 items-center justify-center rounded-xl",
-        iconBox,
+        toneBox(tone),
         size,
         className
       )}
@@ -1465,10 +1510,142 @@ function BackToTop() {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Photo hover preview — shows full profile details on hover + click  */
+/* ------------------------------------------------------------------ */
+
+/* Hover popover — appears when hovering over the profile photo */
+function ProfileHoverCard({ identity, stats, visible }) {
+  if (!visible) return null;
+  return (
+    <div className="absolute left-1/2 top-full z-40 mt-3 w-72 -translate-x-1/2 animate-in fade-in slide-in-from-top-2 duration-200 sm:w-80">
+      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900">
+        {/* Mini header */}
+        <div className="flex items-center gap-3 border-b border-neutral-200 p-3 dark:border-white/10">
+          <img
+            src={identity.photo}
+            alt={identity.name}
+            className="h-10 w-10 rounded-full object-cover ring-2 ring-sky-200 dark:ring-sky-500/30"
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
+          />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-neutral-900 dark:text-white">{identity.name}</p>
+            <p className="truncate text-xs text-sky-600 dark:text-sky-400">{identity.role}</p>
+          </div>
+        </div>
+
+        {/* Detail rows */}
+        <div className="grid grid-cols-2 gap-px bg-neutral-200 dark:bg-white/10">
+          {[
+            { icon: GraduationCap, label: "Education", value: "B.Tech CSE · Final yr", tone: "emerald" },
+            { icon: Building2, label: "College", value: "GEC Vaishali", tone: "sky" },
+            { icon: Layers, label: "Branch", value: "CSE", tone: "violet" },
+            { icon: Award, label: "CGPA", value: "7.8 / 10", tone: "amber" },
+            { icon: Calendar, label: "Batch", value: "2022 – 2026", tone: "amber" },
+            { icon: Code2, label: "Focus", value: "React, Node.js", tone: "sky" },
+          ].map((row) => (
+            <div key={row.label} className="bg-white p-2.5 dark:bg-neutral-900">
+              <p className="flex items-center gap-1 text-[9px] text-neutral-400">
+                <row.icon size={10} className={toneText(row.tone)} />
+                {row.label}
+              </p>
+              <p className="mt-0.5 truncate text-[11px] font-semibold text-neutral-900 dark:text-white">
+                {row.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-4 border-t border-neutral-200 dark:border-white/10">
+          {stats.map((s, i) => (
+            <div key={s.label} className={cn("px-1 py-2 text-center", i > 0 && "border-l border-neutral-200 dark:border-white/10")}>
+              <p className="text-xs font-bold tabular-nums text-neutral-900 dark:text-white">{s.value}</p>
+              <p className="truncate text-[8px] text-neutral-400">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Mini actions */}
+        <div className="flex items-center gap-2 border-t border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-white/10 dark:bg-white/[0.02]">
+          <a
+            href={identity.github}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 rounded-full bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold text-white"
+          >
+            <Github size={10} /> GitHub
+          </a>
+          <a
+            href={identity.resumePath}
+            download
+            className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300"
+          >
+            <Download size={10} /> Resume
+          </a>
+          <Link
+            to="/contact"
+            className="ml-auto text-[10px] font-semibold text-emerald-600 dark:text-emerald-400"
+          >
+            Contact →
+          </Link>
+        </div>
+
+        {/* Arrow pointing up */}
+        <div className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-neutral-200 bg-white dark:border-white/10 dark:bg-neutral-900" />
+      </div>
+    </div>
+  );
+}
+
+/* Full-screen click preview */
+function PhotoPreview({ src, alt, open, onClose }) {
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  if (!open || !src) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Profile photo"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+        aria-label="Close"
+      >
+        <XIcon size={20} />
+      </button>
+      <img
+        src={src}
+        alt={alt}
+        className="max-h-[80vh] max-w-full rounded-2xl object-contain shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  PAGE                                                               */
 /* ------------------------------------------------------------------ */
 
 export default function About() {
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [photoHover, setPhotoHover] = useState(false);
+
   useEffect(() => {
     document.title = "About — Suraj Kumar";
     return () => {
@@ -1548,91 +1725,82 @@ export default function About() {
               </div>
             </div>
 
-            {/* Profile card — wider & bigger photo, sticky on desktop so it stays visible */}
+            {/* Profile card — professional design with colorful icons */}
             <div className="relative z-10 mx-auto w-full max-w-md lg:sticky lg:top-20 lg:mx-0 lg:max-w-lg">
-              <div className={cn(card, "overflow-hidden")}>
-                {/* Photo + identity — bigger photo, balanced text */}
+              <div className={cn(card, "relative")}>
+                {/* Photo + identity — circular photo with hover preview + click to expand */}
                 <div className="flex items-center gap-4 px-5 py-4 sm:px-6 sm:py-5">
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 dark:border-white/15 dark:bg-white/[0.06] sm:h-24 sm:w-24">
-                    <img
-                      src={identity.photo}
-                      alt={`${identity.name} profile`}
-                      className="h-full w-full object-cover object-center"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                        const fb = e.currentTarget.nextElementSibling;
-                        if (fb) fb.classList.remove("hidden");
-                      }}
-                    />
-                    <div
-                      className="hidden absolute inset-0 flex items-center justify-center bg-neutral-200 text-base font-semibold tracking-tight text-neutral-600 dark:bg-white/[0.08] dark:text-neutral-300"
-                      aria-hidden="true"
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setPhotoHover(true)}
+                    onMouseLeave={() => setPhotoHover(false)}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setPhotoOpen(true)}
+                      className="group relative h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-full border-2 border-sky-200 bg-neutral-100 ring-4 ring-sky-50 transition hover:ring-sky-100 dark:border-sky-500/30 dark:bg-white/[0.06] dark:ring-sky-500/5 dark:hover:ring-sky-500/10 sm:h-24 sm:w-24"
+                      aria-label="View profile photo"
+                      title="Hover for details · Click for full photo"
                     >
-                      {identity.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .slice(0, 2)}
-                    </div>
+                      <img
+                        src={identity.photo}
+                        alt={`${identity.name} profile`}
+                        className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          const fb = e.currentTarget.nextElementSibling;
+                          if (fb) fb.classList.remove("hidden");
+                        }}
+                      />
+                      <div
+                        className="hidden absolute inset-0 flex items-center justify-center bg-neutral-200 text-base font-semibold tracking-tight text-neutral-600 dark:bg-white/[0.08] dark:text-neutral-300"
+                        aria-hidden="true"
+                      >
+                        {identity.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </div>
+                      {/* Hover overlay */}
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/40 group-hover:opacity-100">
+                        <Maximize2 size={20} className="text-white" />
+                      </span>
+                    </button>
+
+                    {/* Hover popover — shows all profile details */}
+                    <ProfileHoverCard
+                      identity={identity}
+                      stats={stats}
+                      visible={photoHover}
+                    />
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <h2 className="truncate text-base font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-lg">
                       {identity.name}
                     </h2>
-                    <p className="mt-0.5 truncate text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="mt-0.5 truncate text-sm text-sky-600 dark:text-sky-400">
                       {identity.role}
                     </p>
                     <p className="mt-0.5 inline-flex items-center gap-1 truncate text-xs text-neutral-500 dark:text-neutral-400">
-                      <MapPin size={11} className="shrink-0" />
+                      <MapPin size={11} className="shrink-0 text-amber-500 dark:text-amber-400" />
                       {identity.location}
                     </p>
                   </div>
                 </div>
 
-                {/* Detail rows — 2-column grid for compactness */}
+                {/* Detail rows — 2-column grid with colorful icons */}
                 <div className="grid grid-cols-2 border-t border-neutral-200 dark:border-white/10">
                   {[
-                    {
-                      icon: GraduationCap,
-                      label: "Education",
-                      value: "B.Tech CSE · Final yr",
-                    },
-                    {
-                      icon: Building2,
-                      label: "College",
-                      value: "GEC Vaishali",
-                    },
-                    {
-                      icon: Layers,
-                      label: "Branch",
-                      value: "CSE",
-                    },
-                    {
-                      icon: Award,
-                      label: "CGPA",
-                      value: "7.8 / 10",
-                    },
-                    {
-                      icon: Calendar,
-                      label: "Batch",
-                      value: "2022 – 2026",
-                    },
-                    {
-                      icon: Code2,
-                      label: "Focus",
-                      value: "React, Node.js",
-                    },
-                    {
-                      icon: Network,
-                      label: "Interest",
-                      value: "WebRTC · Socket.IO",
-                    },
-                    {
-                      icon: Github,
-                      label: "GitHub",
-                      value: "@Suraj1819",
-                    },
+                    { icon: GraduationCap, label: "Education", value: "B.Tech CSE · Final yr", tone: "emerald" },
+                    { icon: Building2, label: "College", value: "GEC Vaishali", tone: "sky" },
+                    { icon: Layers, label: "Branch", value: "CSE", tone: "violet" },
+                    { icon: Award, label: "CGPA", value: "7.8 / 10", tone: "amber" },
+                    { icon: Calendar, label: "Batch", value: "2022 – 2026", tone: "amber" },
+                    { icon: Code2, label: "Focus", value: "React, Node.js", tone: "sky" },
+                    { icon: Network, label: "Interest", value: "WebRTC · Socket.IO", tone: "orange" },
+                    { icon: Github, label: "GitHub", value: "@Suraj1819", tone: "rose" },
                   ].map((row, i, arr) => {
                     const isRight = i % 2 === 1;
                     const isBottomRow = i < arr.length - 2;
@@ -1640,20 +1808,20 @@ export default function About() {
                       <div
                         key={row.label}
                         className={cn(
-                          "flex items-start gap-2 px-3 py-2 sm:px-4 sm:py-2.5",
+                          "flex items-start gap-2 px-3 py-2.5 sm:px-4 sm:py-3",
                           isRight && "border-l border-neutral-200 dark:border-white/[0.06]",
                           isBottomRow && "border-b border-neutral-200 dark:border-white/[0.06]"
                         )}
                       >
                         <row.icon
-                          size={13}
-                          className="mt-0.5 shrink-0 text-neutral-400"
+                          size={14}
+                          className={cn("mt-0.5 shrink-0", toneText(row.tone))}
                         />
                         <div className="min-w-0 flex-1">
                           <p className="text-[9px] font-medium uppercase tracking-wide text-neutral-400 sm:text-[10px]">
                             {row.label}
                           </p>
-                          <p className="mt-0.5 truncate text-[11px] font-medium text-neutral-800 dark:text-neutral-200 sm:text-xs">
+                          <p className="mt-0.5 truncate text-[11px] font-semibold text-neutral-800 dark:text-neutral-200 sm:text-xs">
                             {row.value}
                           </p>
                         </div>
@@ -1662,17 +1830,17 @@ export default function About() {
                   })}
                 </div>
 
-                {/* Stats — single horizontal row (4 cols) */}
+                {/* Stats — colorful values with accent */}
                 <div className="grid grid-cols-4 border-t border-neutral-200 dark:border-white/10">
                   {stats.map((s, i) => (
                     <div
                       key={s.label}
                       className={cn(
-                        "px-2 py-2 sm:px-3 sm:py-2.5",
+                        "px-2 py-2.5 text-center sm:px-3 sm:py-3",
                         i > 0 && "border-l border-neutral-200 dark:border-white/10"
                       )}
                     >
-                      <p className="text-sm font-semibold tabular-nums tracking-tight text-neutral-900 dark:text-white sm:text-base">
+                      <p className="text-sm font-bold tabular-nums tracking-tight text-neutral-900 dark:text-white sm:text-base">
                         {s.value}
                       </p>
                       <p className="mt-0.5 truncate text-[9px] text-neutral-500 dark:text-neutral-400 sm:text-[10px]">
@@ -1682,13 +1850,13 @@ export default function About() {
                   ))}
                 </div>
 
-                {/* Actions — compact */}
-                <div className="flex flex-wrap items-center gap-1.5 border-t border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-white/10 dark:bg-white/[0.02] sm:px-4">
+                {/* Actions — colorful buttons */}
+                <div className="flex flex-wrap items-center gap-1.5 border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.02] sm:px-4">
                   <a
                     href={identity.github}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-700 transition hover:border-neutral-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:border-white"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
                   >
                     <Github size={12} />
                     GitHub
@@ -1696,14 +1864,14 @@ export default function About() {
                   <a
                     href={identity.resumePath}
                     download
-                    className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-700 transition hover:border-neutral-900 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:border-white"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[11px] font-semibold text-sky-700 transition hover:bg-sky-100 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20"
                   >
                     <Download size={12} />
                     Resume
                   </a>
                   <Link
                     to="/contact"
-                    className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                    className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
                   >
                     Contact <ArrowRight size={12} />
                   </Link>
@@ -1757,7 +1925,7 @@ export default function About() {
               <Reveal key={item.title} delay={index * 40}>
                 <div className={cn(card, hoverCard, "group h-full p-4 sm:p-6")}>
                   <div className="mb-4 flex items-center justify-between sm:mb-5">
-                    <IconBox icon={item.icon} />
+                    <IconBox icon={item.icon} tone={["sky","violet","emerald","amber","orange","rose"][index % 6]} />
                     <ArrowUpRight
                       size={17}
                       className="text-neutral-300 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-neutral-700 dark:text-neutral-600 dark:group-hover:text-neutral-300"
@@ -1806,7 +1974,7 @@ export default function About() {
                 <Reveal key={project.name} delay={index * 50}>
                   <article className={cn(card, hoverCard, "group flex h-full flex-col p-4 sm:p-7")}>
                     <div className="mb-4 flex items-start justify-between gap-3 sm:mb-5">
-                      <IconBox icon={Icon} />
+                      <IconBox icon={Icon} tone={["sky","violet","emerald","amber","orange"][index % 5]} />
                       <StatusBadge status={project.status} />
                     </div>
                     <h3 className="text-base font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-lg">
@@ -1870,7 +2038,7 @@ export default function About() {
               <Reveal key={item.title} delay={index * 50}>
                 <div className={cn(card, hoverCard, "group h-full p-4 sm:p-6")}>
                   <div className="mb-4 flex items-center justify-between sm:mb-5">
-                    <IconBox icon={item.icon} />
+                    <IconBox icon={item.icon} tone={["amber","violet","sky","emerald","rose"][index % 5]} />
                     <Trophy
                       size={16}
                       className="text-neutral-300 transition group-hover:text-neutral-700 dark:text-neutral-600 dark:group-hover:text-neutral-300"
@@ -1931,7 +2099,7 @@ export default function About() {
               <Reveal key={goal.topic} delay={index * 40}>
                 <div className={cn(card, hoverCard, "h-full p-5")}>
                   <div className="mb-3 flex items-center gap-3">
-                    <IconBox icon={Target} size="h-9 w-9" iconSize={16} />
+                    <IconBox icon={Target} size="h-9 w-9" iconSize={16} tone="amber" />
                     <p className="text-sm font-semibold text-neutral-900 dark:text-white">
                       {goal.topic}
                     </p>
@@ -1955,7 +2123,7 @@ export default function About() {
             <div className={cn(card, "p-5 sm:p-10 lg:p-12")}>
               <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16">
                 <div className="max-w-2xl">
-                  <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 sm:mb-5 sm:h-12 sm:w-12 sm:rounded-2xl">
+                  <div className={cn(toneBox("violet"), "mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl sm:mb-5 sm:h-12 sm:w-12 sm:rounded-2xl")}>
                     <Sparkles size={20} />
                   </div>
                   <SectionLabel>Let&apos;s connect</SectionLabel>
@@ -1999,6 +2167,13 @@ export default function About() {
           </Reveal>
         </div>
       </section>
+      {/* Profile photo full-screen preview */}
+      <PhotoPreview
+        src={identity.photo}
+        alt={`${identity.name} profile`}
+        open={photoOpen}
+        onClose={() => setPhotoOpen(false)}
+      />
     </main>
   );
 }

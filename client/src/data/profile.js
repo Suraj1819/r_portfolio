@@ -17,12 +17,12 @@ export const profile = {
   location: "Muzaffarpur, Bihar, India",
 
   // Replace this placeholder with your actual email.
-  email: "suraj.kumar.dev@example.com",
+  email: "surajkumarraj8888@gmail.com",
 
   github: "https://github.com/Suraj1819",
   linkedin: null,
 
-  portfolio: "https://surajzxrt.online",
+  portfolio: "https://suraj-omega.vercel.app",
   portfolioAlt: "https://surajzxrt.netlify.app",
 
   // Place resume.pdf inside the public/ folder.
@@ -156,7 +156,7 @@ export const profile = {
         "A multi-page portfolio showcasing projects, skills, experience, and contact information.",
       status: "Live",
       github: "https://github.com/Suraj1819",
-      live: "https://surajzxrt.online",
+      live: "https://suraj-omega.vercel.app",
       stack: [
         "React",
         "Vite",
